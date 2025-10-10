@@ -19,27 +19,39 @@ serve(async (req) => {
 
     const OPENWEATHER_API_KEY = Deno.env.get('OPENWEATHER_API_KEY');
     if (!OPENWEATHER_API_KEY) {
+      console.error('OpenWeather API key not configured');
       throw new Error('OpenWeather API key not configured');
     }
+
+    console.log('Fetching weather for:', { latitude, longitude });
 
     // Get current weather data
     const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${OPENWEATHER_API_KEY}&units=metric`;
     const weatherResponse = await fetch(weatherUrl);
     
     if (!weatherResponse.ok) {
-      throw new Error('Failed to fetch weather data');
+      const errorText = await weatherResponse.text();
+      console.error('OpenWeather API error:', {
+        status: weatherResponse.status,
+        statusText: weatherResponse.statusText,
+        error: errorText
+      });
+      throw new Error(`Weather API returned ${weatherResponse.status}: ${errorText}`);
     }
 
     const weatherData = await weatherResponse.json();
+    console.log('Weather data received successfully');
 
-    // Get climate data (historical averages)
-    const climateUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&appid=${OPENWEATHER_API_KEY}&units=metric&exclude=minutely,hourly,alerts`;
+    // Get climate data (historical averages) - using One Call API 3.0
+    const climateUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${latitude}&lon=${longitude}&appid=${OPENWEATHER_API_KEY}&units=metric&exclude=minutely,hourly,alerts`;
     const climateResponse = await fetch(climateUrl);
     
     let dailyData = null;
     if (climateResponse.ok) {
       const climateData = await climateResponse.json();
       dailyData = climateData.daily?.slice(0, 7); // Next 7 days
+    } else {
+      console.warn('Climate data fetch failed (non-critical):', climateResponse.status);
     }
 
     const result = {
@@ -76,9 +88,15 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Error fetching weather data:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('Full error details:', {
+      message: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+        error: errorMessage
       }),
       { 
         status: 500,

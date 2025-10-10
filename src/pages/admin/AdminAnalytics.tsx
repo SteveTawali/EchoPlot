@@ -77,46 +77,46 @@ export default function AdminAnalytics() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-4 md:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Analytics & Reports</h1>
-        <p className="text-muted-foreground">System performance and insights</p>
+        <h1 className="text-2xl md:text-3xl font-bold">Analytics & Reports</h1>
+        <p className="text-sm md:text-base text-muted-foreground">System performance and insights</p>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-full bg-green-500/10">
-              <CheckCircle className="h-6 w-6 text-green-500" />
+      <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+        <Card className="p-4 md:p-6">
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="p-2 md:p-3 rounded-full bg-green-500/10">
+              <CheckCircle className="h-4 w-4 md:h-6 md:w-6 text-green-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Verified</p>
-              <p className="text-2xl font-bold">{stats?.total_approved || 0}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Total Verified</p>
+              <p className="text-xl md:text-2xl font-bold">{stats?.total_approved || 0}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-full bg-blue-500/10">
-              <TrendingUp className="h-6 w-6 text-blue-500" />
+        <Card className="p-4 md:p-6">
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="p-2 md:p-3 rounded-full bg-blue-500/10">
+              <TrendingUp className="h-4 w-4 md:h-6 md:w-6 text-blue-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Approval Rate</p>
-              <p className="text-2xl font-bold">{stats?.approval_rate || 0}%</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Approval Rate</p>
+              <p className="text-xl md:text-2xl font-bold">{stats?.approval_rate || 0}%</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-full bg-purple-500/10">
-              <TreePine className="h-6 w-6 text-purple-500" />
+        <Card className="p-4 md:p-6">
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="p-2 md:p-3 rounded-full bg-purple-500/10">
+              <TreePine className="h-4 w-4 md:h-6 md:w-6 text-purple-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Carbon Sequestered</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xs md:text-sm text-muted-foreground">Carbon Sequestered</p>
+              <p className="text-xl md:text-2xl font-bold">
                 {((stats?.total_approved || 0) * 22).toLocaleString()} kg
               </p>
             </div>
@@ -125,18 +125,18 @@ export default function AdminAnalytics() {
       </div>
 
       {/* County Performance */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Performance by County</h3>
-        <div className="space-y-4">
+      <Card className="p-4 md:p-6">
+        <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Performance by County</h3>
+        <div className="space-y-3 md:space-y-4">
           {countyData.map((county) => (
             <div key={county.county} className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="font-medium">{county.county}</span>
-                <span className="text-sm text-muted-foreground">
-                  {county.total} total submissions
+                <span className="text-sm md:text-base font-medium truncate mr-2">{county.county}</span>
+                <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
+                  {county.total} total
                 </span>
               </div>
-              <div className="flex gap-2 h-6">
+              <div className="flex gap-1 md:gap-2 h-5 md:h-6">
                 <div
                   className="bg-green-500 rounded flex items-center justify-center text-xs text-white"
                   style={{ width: `${(county.verified / county.total) * 100}%` }}
@@ -159,10 +159,10 @@ export default function AdminAnalytics() {
                   {county.rejected > 0 && county.rejected}
                 </div>
               </div>
-              <div className="flex gap-4 text-xs text-muted-foreground">
-                <span>✓ {county.verified} verified</span>
-                <span>⏳ {county.pending} pending</span>
-                <span>✗ {county.rejected} rejected</span>
+              <div className="flex flex-wrap gap-2 md:gap-4 text-xs text-muted-foreground">
+                <span>✓ {county.verified}</span>
+                <span>⏳ {county.pending}</span>
+                <span>✗ {county.rejected}</span>
               </div>
             </div>
           ))}

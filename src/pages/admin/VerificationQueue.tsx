@@ -241,37 +241,41 @@ export default function VerificationQueue() {
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 md:gap-0">
         <div>
-          <h1 className="text-3xl font-bold">Verification Queue</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold">Verification Queue</h1>
+          <p className="text-sm md:text-base text-muted-foreground">
             {filteredVerifications.length} verification{filteredVerifications.length !== 1 ? 's' : ''}
             {selectedItems.size > 0 && ` (${selectedItems.size} selected)`}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           {selectedItems.size > 0 && (
             <>
               <Button
                 variant="default"
+                size="sm"
                 onClick={() => {
                   setBulkAction('approve');
                   setShowBulkDialog(true);
                 }}
+                className="w-full sm:w-auto"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Bulk Approve ({selectedItems.size})
+                <span className="hidden sm:inline">Bulk</span> Approve ({selectedItems.size})
               </Button>
               <Button
                 variant="destructive"
+                size="sm"
                 onClick={() => {
                   setBulkAction('reject');
                   setShowBulkDialog(true);
                 }}
+                className="w-full sm:w-auto"
               >
                 <XCircle className="h-4 w-4 mr-2" />
-                Bulk Reject ({selectedItems.size})
+                <span className="hidden sm:inline">Bulk</span> Reject ({selectedItems.size})
               </Button>
             </>
           )}
@@ -279,8 +283,8 @@ export default function VerificationQueue() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4">
-        <div className="grid gap-4 md:grid-cols-4">
+      <Card className="p-3 md:p-4">
+        <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
@@ -315,15 +319,15 @@ export default function VerificationQueue() {
             </SelectContent>
           </Select>
 
-          <Button variant="outline">
+          <Button variant="outline" className="hidden md:flex">
             <Map className="h-4 w-4 mr-2" />
             Map View
           </Button>
         </div>
       </Card>
 
-      {/* Table */}
-      <Card>
+      {/* Table - Hidden on mobile, show cards instead */}
+      <Card className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -422,6 +426,80 @@ export default function VerificationQueue() {
           </TableBody>
         </Table>
       </Card>
+
+      {/* Mobile Card View */}
+      <div className="grid gap-3 md:hidden">
+        {filteredVerifications.map((verification) => (
+          <Card key={verification.id} className="p-4">
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  checked={selectedItems.has(verification.id)}
+                  onCheckedChange={() => toggleSelection(verification.id)}
+                  className="mt-1"
+                />
+                <img
+                  src={verification.image_url}
+                  alt="Planting"
+                  className="w-20 h-20 object-cover rounded"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">{verification.tree_name}</p>
+                  <p className="text-xs text-muted-foreground">{verification.full_name}</p>
+                  <Badge variant={
+                    verification.status === 'verified' ? 'default' :
+                    verification.status === 'rejected' ? 'destructive' :
+                    'secondary'
+                  } className="mt-1">
+                    {verification.status}
+                  </Badge>
+                </div>
+              </div>
+              
+              <div className="text-xs space-y-1 text-muted-foreground">
+                <p className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  {verification.county}, {verification.constituency}
+                </p>
+                <p className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {new Date(verification.planting_date).toLocaleDateString()}
+                </p>
+                <p className="flex items-center gap-1">
+                  <Phone className="h-3 w-3" />
+                  {verification.submission_phone || verification.user_phone}
+                </p>
+              </div>
+
+              {verification.status === 'pending' && (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={() => handleApprove(verification.id)}
+                    className="flex-1"
+                  >
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Approve
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => {
+                      setSelectedVerification(verification);
+                      setShowRejectDialog(true);
+                    }}
+                    className="flex-1"
+                  >
+                    <XCircle className="h-3 w-3 mr-1" />
+                    Reject
+                  </Button>
+                </div>
+              )}
+            </div>
+          </Card>
+        ))}
+      </div>
 
       {/* Reject Dialog */}
       <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>

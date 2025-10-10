@@ -1,9 +1,10 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   LayoutDashboard,
   ClipboardCheck,
@@ -14,7 +15,8 @@ import {
   Shield,
   TreePine,
   Building2,
-  Home
+  Home,
+  Menu
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -27,6 +29,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const location = useLocation();
   const { canModerate, loading, role, county } = useAdminAuth();
   const { signOut } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !canModerate) {
@@ -64,64 +67,90 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     return location.pathname.startsWith(path);
   };
 
-  return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar */}
-      <aside className="w-64 border-r bg-card flex flex-col">
-        <div className="p-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Shield className="h-8 w-8 text-primary" />
-            <div>
-              <h1 className="text-xl font-bold">Admin Panel</h1>
-              <p className="text-xs text-muted-foreground capitalize">{role}</p>
-            </div>
+  const SidebarContent = () => (
+    <>
+      <div className="p-4 md:p-6">
+        <div className="flex items-center gap-2 mb-2">
+          <Shield className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+          <div>
+            <h1 className="text-lg md:text-xl font-bold">Admin Panel</h1>
+            <p className="text-xs text-muted-foreground capitalize">{role}</p>
           </div>
-          {county && (
-            <p className="text-xs text-muted-foreground mt-2">County: {county}</p>
-          )}
         </div>
+        {county && (
+          <p className="text-xs text-muted-foreground mt-2">County: {county}</p>
+        )}
+      </div>
 
-        <Separator />
+      <Separator />
 
-        <nav className="flex-1 p-4 space-y-2">
-          <Link to="/">
+      <nav className="flex-1 p-3 md:p-4 space-y-2">
+        <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+          >
+            <Home className="h-4 w-4 mr-3" />
+            Home
+          </Button>
+        </Link>
+        {navItems.map((item) => (
+          <Link key={item.path} to={item.path} onClick={() => setMobileMenuOpen(false)}>
             <Button
-              variant="ghost"
+              variant={isActive(item.path, item.exact) ? 'secondary' : 'ghost'}
               className="w-full justify-start"
             >
-              <Home className="h-4 w-4 mr-3" />
-              Home
+              <item.icon className="h-4 w-4 mr-3" />
+              {item.label}
             </Button>
           </Link>
-          {navItems.map((item) => (
-            <Link key={item.path} to={item.path}>
-              <Button
-                variant={isActive(item.path, item.exact) ? 'secondary' : 'ghost'}
-                className="w-full justify-start"
-              >
-                <item.icon className="h-4 w-4 mr-3" />
-                {item.label}
-              </Button>
-            </Link>
-          ))}
-        </nav>
+        ))}
+      </nav>
 
-        <Separator />
+      <Separator />
 
-        <div className="p-4">
-          <Button
-            variant="outline"
-            className="w-full justify-start"
-            onClick={handleSignOut}
-          >
-            <LogOut className="h-4 w-4 mr-3" />
-            Sign Out
-          </Button>
+      <div className="p-3 md:p-4">
+        <Button
+          variant="outline"
+          className="w-full justify-start"
+          onClick={handleSignOut}
+        >
+          <LogOut className="h-4 w-4 mr-3" />
+          Sign Out
+        </Button>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="flex h-screen bg-background">
+      {/* Mobile Header */}
+      <div className="fixed top-0 left-0 right-0 h-14 border-b bg-card flex items-center px-4 md:hidden z-50">
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-64 p-0">
+            <div className="flex flex-col h-full">
+              <SidebarContent />
+            </div>
+          </SheetContent>
+        </Sheet>
+        <div className="flex items-center gap-2 ml-3">
+          <Shield className="h-5 w-5 text-primary" />
+          <h1 className="text-base font-bold">Admin Panel</h1>
         </div>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-64 border-r bg-card flex-col">
+        <SidebarContent />
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto pt-14 md:pt-0">
         {children}
       </main>
     </div>

@@ -169,68 +169,68 @@ export default function AdminOverview() {
     .slice(0, 5);
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-4 md:space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Verification Dashboard</h1>
-          <p className="text-muted-foreground">Review and approve planting submissions</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Verification Dashboard</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Review and approve planting submissions</p>
         </div>
       </div>
 
       {/* Main Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-full bg-orange-500/10">
-              <Clock className="h-6 w-6 text-orange-500" />
+      <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-4">
+        <Card className="p-4 md:p-6">
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="p-2 md:p-3 rounded-full bg-orange-500/10">
+              <Clock className="h-4 w-4 md:h-6 md:w-6 text-orange-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-2xl font-bold">{stats?.total_pending || 0}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Pending</p>
+              <p className="text-xl md:text-2xl font-bold">{stats?.total_pending || 0}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-full bg-green-500/10">
-              <CheckCircle className="h-6 w-6 text-green-500" />
+        <Card className="p-4 md:p-6">
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="p-2 md:p-3 rounded-full bg-green-500/10">
+              <CheckCircle className="h-4 w-4 md:h-6 md:w-6 text-green-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Approved</p>
-              <p className="text-2xl font-bold">{stats?.total_approved || 0}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Approved</p>
+              <p className="text-xl md:text-2xl font-bold">{stats?.total_approved || 0}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-full bg-red-500/10">
-              <XCircle className="h-6 w-6 text-red-500" />
+        <Card className="p-4 md:p-6">
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="p-2 md:p-3 rounded-full bg-red-500/10">
+              <XCircle className="h-4 w-4 md:h-6 md:w-6 text-red-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Rejected</p>
-              <p className="text-2xl font-bold">{stats?.total_rejected || 0}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Rejected</p>
+              <p className="text-xl md:text-2xl font-bold">{stats?.total_rejected || 0}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-full bg-blue-500/10">
-              <TrendingUp className="h-6 w-6 text-blue-500" />
+        <Card className="p-4 md:p-6">
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="p-2 md:p-3 rounded-full bg-blue-500/10">
+              <TrendingUp className="h-4 w-4 md:h-6 md:w-6 text-blue-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Approval Rate</p>
-              <p className="text-2xl font-bold">{stats?.approval_rate || 0}%</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Approval Rate</p>
+              <p className="text-xl md:text-2xl font-bold">{stats?.approval_rate || 0}%</p>
             </div>
           </div>
         </Card>
       </div>
 
       {/* Pending Submissions Grid */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Pending Submissions ({pendingSubmissions.length})</h2>
+      <div className="space-y-3 md:space-y-4">
+        <h2 className="text-lg md:text-xl font-semibold">Pending Submissions ({pendingSubmissions.length})</h2>
         
         {pendingSubmissions.length === 0 ? (
           <Card className="p-8 text-center">
@@ -238,10 +238,10 @@ export default function AdminOverview() {
             <p className="text-muted-foreground">No pending submissions to review</p>
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-3 md:gap-4">
             {pendingSubmissions.map((submission) => (
-              <Card key={submission.id} className="p-6">
-                <div className="grid md:grid-cols-3 gap-6">
+              <Card key={submission.id} className="p-4 md:p-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                   {/* Image */}
                   <div className="space-y-2">
                     <img
@@ -296,7 +296,7 @@ export default function AdminOverview() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-2 md:gap-3">
                     {submission.latitude && submission.longitude ? (
                       <a
                         href={`https://www.google.com/maps?q=${submission.latitude},${submission.longitude}`}

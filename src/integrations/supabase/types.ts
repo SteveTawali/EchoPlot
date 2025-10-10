@@ -168,7 +168,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_community_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_carbon_sequestered: number
+          total_matches: number
+          total_users: number
+          total_verified_plantings: number
+        }[]
+      }
+      get_leaderboard: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          carbon_sequestered: number
+          full_name: string
+          rank: number
+          total_matches: number
+          user_id: string
+          verified_count: number
+        }[]
+      }
     }
     Enums: {
       climate_zone:

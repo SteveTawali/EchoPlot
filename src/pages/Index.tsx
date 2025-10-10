@@ -29,6 +29,9 @@ const Index = () => {
             <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
               Dashboard
             </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/community")}>
+              Community
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate("/verifications")}>
               Verifications
             </Button>

@@ -318,6 +318,19 @@ const Dashboard = () => {
               </div>
             </div>
           </Card>
+
+          {/* Action Buttons */}
+          <div className="flex gap-4 justify-center flex-wrap">
+            <Button onClick={() => navigate("/community")} variant="outline">
+              View Community
+            </Button>
+            <Button onClick={() => navigate("/matches")} variant="outline">
+              Find More Matches
+            </Button>
+            <Button onClick={() => navigate("/verifications")}>
+              Upload Verification
+            </Button>
+          </div>
         </div>
       </div>
     </div>

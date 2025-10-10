@@ -137,14 +137,15 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   }
 
   return (
-    <div className="flex flex-col items-center space-y-6 animate-fade-in">
+    <div className="flex flex-col items-center space-y-6 animate-fade-in" role="region" aria-label="Tree matching interface">
       {/* View Matches Button */}
       <Button
         variant="outline"
         onClick={() => navigate("/matches")}
         className="gap-2"
+        aria-label={`View your ${matchedTrees.length} tree matches`}
       >
-        <History className="w-4 h-4" />
+        <History className="w-4 h-4" aria-hidden="true" />
         View Your Matches ({matchedTrees.length})
       </Button>
 
@@ -152,9 +153,16 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       <div className="w-full max-w-sm">
         <div className="flex justify-between text-sm text-muted-foreground mb-2">
           <span>Progress</span>
-          <span>{currentIndex + 1} / {trees.length}</span>
+          <span aria-live="polite">{currentIndex + 1} / {trees.length}</span>
         </div>
-        <div className="h-2 bg-muted rounded-full overflow-hidden">
+        <div 
+          className="h-2 bg-muted rounded-full overflow-hidden"
+          role="progressbar"
+          aria-valuenow={currentIndex + 1}
+          aria-valuemin={1}
+          aria-valuemax={trees.length}
+          aria-label={`Tree selection progress: ${currentIndex + 1} of ${trees.length}`}
+        >
           <div 
             className="h-full bg-primary transition-all duration-300"
             style={{ width: `${((currentIndex + 1) / trees.length) * 100}%` }}
@@ -171,32 +179,35 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           } ${
             isAnimating && swipeDirection === 'right' ? 'animate-swipe-right' : ''
           }`}
+          role="group"
+          aria-label="Current tree card"
         >
           <TreeCard {...currentTree} compatibilityScore={compatibilityScore} />
         </div>
 
         {/* Next card preview */}
         {currentIndex + 1 < trees.length && (
-          <div className="absolute inset-0 -z-10 scale-95 opacity-50">
+          <div className="absolute inset-0 -z-10 scale-95 opacity-50" aria-hidden="true">
             <TreeCard {...trees[currentIndex + 1]} />
           </div>
         )}
       </div>
 
       {/* Action buttons */}
-      <div className="flex gap-6 items-center">
+      <div className="flex gap-6 items-center" role="group" aria-label="Swipe actions">
         <Button
           variant="swipe"
           size="icon"
           className="w-16 h-16 rounded-full"
           onClick={() => handleSwipe('left')}
           disabled={isAnimating}
+          aria-label={`Pass on ${currentTree?.name}`}
         >
-          <X className="w-8 h-8 text-destructive" />
+          <X className="w-8 h-8 text-destructive" aria-hidden="true" />
         </Button>
         
         <div className="text-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground" aria-live="polite">
             {matchedTrees.length} tree{matchedTrees.length !== 1 ? 's' : ''} matched
           </p>
         </div>
@@ -207,13 +218,14 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           className="w-16 h-16 rounded-full"
           onClick={() => handleSwipe('right')}
           disabled={isAnimating}
+          aria-label={`Match with ${currentTree?.name}`}
         >
-          <Heart className="w-8 h-8 text-secondary" />
+          <Heart className="w-8 h-8 text-secondary" aria-hidden="true" />
         </Button>
       </div>
 
       {/* Instructions */}
-      <p className="text-sm text-center text-muted-foreground max-w-sm">
+      <p className="text-sm text-center text-muted-foreground max-w-sm" role="note">
         Swipe right to match with trees perfect for your land, or left to pass
       </p>
     </div>

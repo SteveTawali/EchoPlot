@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,57 +6,88 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Onboarding from "./pages/Onboarding";
-import Matches from "./pages/Matches";
-import Verifications from "./pages/Verifications";
-import Dashboard from "./pages/Dashboard";
-import NotFound from "./pages/NotFound";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const queryClient = new QueryClient();
+// Lazy load route components for better performance
+const Index = lazy(() => import("./pages/Index"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Matches = lazy(() => import("./pages/Matches"));
+const Verifications = lazy(() => import("./pages/Verifications"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Community = lazy(() => import("./pages/Community"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
+    },
+  },
+});
+
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="space-y-4 w-full max-w-md px-4">
+      <Skeleton className="h-12 w-full" />
+      <Skeleton className="h-64 w-full" />
+      <Skeleton className="h-12 w-full" />
+    </div>
+  </div>
+);
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/onboarding" element={
-              <ProtectedRoute>
-                <Onboarding />
-              </ProtectedRoute>
-            } />
-            <Route path="/matches" element={
-              <ProtectedRoute requireOnboarding>
-                <Matches />
-              </ProtectedRoute>
-            } />
-            <Route path="/verifications" element={
-              <ProtectedRoute requireOnboarding>
-                <Verifications />
-              </ProtectedRoute>
-            } />
-            <Route path="/dashboard" element={
-              <ProtectedRoute requireOnboarding>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/" element={
-              <ProtectedRoute requireOnboarding>
-                <Index />
-              </ProtectedRoute>
-            } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/onboarding" element={
+                  <ProtectedRoute>
+                    <Onboarding />
+                  </ProtectedRoute>
+                } />
+                <Route path="/matches" element={
+                  <ProtectedRoute requireOnboarding>
+                    <Matches />
+                  </ProtectedRoute>
+                } />
+                <Route path="/verifications" element={
+                  <ProtectedRoute requireOnboarding>
+                    <Verifications />
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard" element={
+                  <ProtectedRoute requireOnboarding>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/community" element={
+                  <ProtectedRoute requireOnboarding>
+                    <Community />
+                  </ProtectedRoute>
+                } />
+                <Route path="/" element={
+                  <ProtectedRoute requireOnboarding>
+                    <Index />
+                  </ProtectedRoute>
+                } />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

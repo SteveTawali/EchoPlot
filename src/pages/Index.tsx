@@ -1,7 +1,7 @@
 import { SwipeInterface } from "@/components/SwipeInterface";
 import { KENYAN_TREES } from "@/data/kenya";
 import { Button } from "@/components/ui/button";
-import { Leaf, Heart, Globe, LogOut, Shield, User } from "lucide-react";
+import { Leaf, Heart, Globe, LogOut, Shield, User, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -35,6 +35,10 @@ const Index = () => {
             </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate("/community")}>
               Community
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/nursery")}>
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Nursery
             </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate("/verifications")}>
               Verifications

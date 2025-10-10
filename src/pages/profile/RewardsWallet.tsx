@@ -78,6 +78,14 @@ const RewardsWallet = () => {
     loadWallet();
   }, [user]);
 
+  const simulateMpesaWithdrawal = () => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(true);
+      }, 3000);
+    });
+  };
+
   const handleWithdraw = async () => {
     const amount = parseFloat(withdrawAmount);
     
@@ -109,13 +117,24 @@ const RewardsWallet = () => {
     }
 
     toast({
-      title: language === 'en' ? 'Withdrawal Initiated' : 'Uondoaji Umeanza',
+      title: language === 'en' ? 'Processing Withdrawal...' : 'Inashughulikia Uondoaji...',
       description: language === 'en' 
-        ? 'Your M-Pesa withdrawal is being processed' 
-        : 'Uondoaji wako wa M-Pesa unashughulikiwa',
+        ? 'Please wait while we process your M-Pesa withdrawal' 
+        : 'Tafadhali subiri tunaposhughulikia uondoaji wako wa M-Pesa',
     });
 
-    // In a real implementation, this would call an edge function to process M-Pesa payment
+    // Simulate M-Pesa withdrawal
+    await simulateMpesaWithdrawal();
+
+    toast({
+      title: language === 'en' ? 'Withdrawal Successful!' : 'Uondoaji Umefaulu!',
+      description: language === 'en' 
+        ? `KSh ${amount.toFixed(2)} sent to ${withdrawPhone}` 
+        : `KSh ${amount.toFixed(2)} imetumwa kwa ${withdrawPhone}`,
+    });
+
+    // In a real implementation, this would update the database
+    setBalance(prev => prev - amount);
     setWithdrawAmount('');
   };
 

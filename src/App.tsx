@@ -32,6 +32,7 @@ const PlantingHistory = lazy(() => import("./pages/profile/PlantingHistory"));
 const RewardsWallet = lazy(() => import("./pages/profile/RewardsWallet"));
 const Achievements = lazy(() => import("./pages/profile/Achievements"));
 const ProfileSettings = lazy(() => import("./pages/profile/ProfileSettings"));
+const NurseryMarketplace = lazy(() => import("./pages/NurseryMarketplace"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -89,6 +90,11 @@ const App = () => (
                   <Route path="/community" element={
                     <ProtectedRoute requireOnboarding>
                       <Community />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/nursery" element={
+                    <ProtectedRoute requireOnboarding>
+                      <NurseryMarketplace />
                     </ProtectedRoute>
                   } />
                   <Route path="/admin" element={

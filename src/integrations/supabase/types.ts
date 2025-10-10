@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      planting_verifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string
+          latitude: number | null
+          longitude: number | null
+          notes: string | null
+          planting_date: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["verification_status"] | null
+          tree_match_id: string | null
+          tree_name: string
+          updated_at: string | null
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url: string
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
+          planting_date?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["verification_status"] | null
+          tree_match_id?: string | null
+          tree_name: string
+          updated_at?: string | null
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
+          planting_date?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["verification_status"] | null
+          tree_match_id?: string | null
+          tree_name?: string
+          updated_at?: string | null
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planting_verifications_tree_match_id_fkey"
+            columns: ["tree_match_id"]
+            isOneToOne: false
+            referencedRelation: "tree_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           climate_zone: Database["public"]["Enums"]["climate_zone"] | null
@@ -125,6 +187,7 @@ export type Database = {
         | "food_production"
         | "aesthetic_beauty"
       soil_type: "clay" | "sandy" | "loamy" | "silty" | "peaty" | "chalky"
+      verification_status: "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -270,6 +333,7 @@ export const Constants = {
         "aesthetic_beauty",
       ],
       soil_type: ["clay", "sandy", "loamy", "silty", "peaty", "chalky"],
+      verification_status: ["pending", "verified", "rejected"],
     },
   },
 } as const

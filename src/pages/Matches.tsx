@@ -175,6 +175,13 @@ const Matches = () => {
                         {match.favorited ? "Favorited" : "Favorite"}
                       </Button>
                       <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => navigate(`/verifications?matchId=${match.id}&treeName=${encodeURIComponent(match.tree_name)}`)}
+                      >
+                        Verify Planting
+                      </Button>
+                      <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => deleteMatch(match.id)}

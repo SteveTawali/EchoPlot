@@ -3,11 +3,13 @@ import { trees } from "@/data/trees";
 import { Button } from "@/components/ui/button";
 import { Leaf, Heart, Globe, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import heroForest from "@/assets/hero-forest.jpg";
 import { toast } from "sonner";
 
 const Index = () => {
   const { signOut, user } = useAuth();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
@@ -23,10 +25,15 @@ const Index = () => {
             <Leaf className="w-6 h-6 text-primary" />
             <span className="font-bold text-lg">Canopy Connections</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/verifications")}>
+              Verifications
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </nav>
 

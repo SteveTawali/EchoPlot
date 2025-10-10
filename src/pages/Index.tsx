@@ -1,14 +1,37 @@
 import { SwipeInterface } from "@/components/SwipeInterface";
 import { trees } from "@/data/trees";
 import { Button } from "@/components/ui/button";
-import { Leaf, Heart, Globe } from "lucide-react";
+import { Leaf, Heart, Globe, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import heroForest from "@/assets/hero-forest.jpg";
+import { toast } from "sonner";
 
 const Index = () => {
+  const { signOut, user } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out successfully");
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Leaf className="w-6 h-6 text-primary" />
+            <span className="font-bold text-lg">Canopy Connections</span>
+          </div>
+          <Button variant="ghost" size="sm" onClick={handleSignOut}>
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
+      </nav>
+
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-screen flex items-center justify-center overflow-hidden pt-16">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${heroForest})` }}

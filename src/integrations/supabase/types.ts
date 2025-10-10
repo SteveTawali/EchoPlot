@@ -16,14 +16,21 @@ export type Database = {
     Tables: {
       planting_verifications: {
         Row: {
+          constituency: string | null
+          county: string | null
           created_at: string | null
           id: string
           image_url: string
           latitude: number | null
           longitude: number | null
+          mpesa_transaction_id: string | null
           notes: string | null
+          phone: string | null
           planting_date: string | null
           rejection_reason: string | null
+          reward_amount: number | null
+          reward_paid: boolean | null
+          reward_paid_at: string | null
           status: Database["public"]["Enums"]["verification_status"] | null
           tree_match_id: string | null
           tree_name: string
@@ -33,14 +40,21 @@ export type Database = {
           verified_by: string | null
         }
         Insert: {
+          constituency?: string | null
+          county?: string | null
           created_at?: string | null
           id?: string
           image_url: string
           latitude?: number | null
           longitude?: number | null
+          mpesa_transaction_id?: string | null
           notes?: string | null
+          phone?: string | null
           planting_date?: string | null
           rejection_reason?: string | null
+          reward_amount?: number | null
+          reward_paid?: boolean | null
+          reward_paid_at?: string | null
           status?: Database["public"]["Enums"]["verification_status"] | null
           tree_match_id?: string | null
           tree_name: string
@@ -50,14 +64,21 @@ export type Database = {
           verified_by?: string | null
         }
         Update: {
+          constituency?: string | null
+          county?: string | null
           created_at?: string | null
           id?: string
           image_url?: string
           latitude?: number | null
           longitude?: number | null
+          mpesa_transaction_id?: string | null
           notes?: string | null
+          phone?: string | null
           planting_date?: string | null
           rejection_reason?: string | null
+          reward_amount?: number | null
+          reward_paid?: boolean | null
+          reward_paid_at?: string | null
           status?: Database["public"]["Enums"]["verification_status"] | null
           tree_match_id?: string | null
           tree_name?: string
@@ -78,10 +99,13 @@ export type Database = {
       }
       profiles: {
         Row: {
+          agro_zone: string | null
           climate_zone: Database["public"]["Enums"]["climate_zone"] | null
           conservation_goals:
             | Database["public"]["Enums"]["conservation_goal"][]
             | null
+          constituency: string | null
+          county: string | null
           created_at: string | null
           email: string | null
           full_name: string | null
@@ -90,15 +114,20 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           onboarding_completed: boolean | null
+          phone: string | null
+          preferred_language: string | null
           soil_type: Database["public"]["Enums"]["soil_type"] | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          agro_zone?: string | null
           climate_zone?: Database["public"]["Enums"]["climate_zone"] | null
           conservation_goals?:
             | Database["public"]["Enums"]["conservation_goal"][]
             | null
+          constituency?: string | null
+          county?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
@@ -107,15 +136,20 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           onboarding_completed?: boolean | null
+          phone?: string | null
+          preferred_language?: string | null
           soil_type?: Database["public"]["Enums"]["soil_type"] | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          agro_zone?: string | null
           climate_zone?: Database["public"]["Enums"]["climate_zone"] | null
           conservation_goals?:
             | Database["public"]["Enums"]["conservation_goal"][]
             | null
+          constituency?: string | null
+          county?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
@@ -124,6 +158,8 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           onboarding_completed?: boolean | null
+          phone?: string | null
+          preferred_language?: string | null
           soil_type?: Database["public"]["Enums"]["soil_type"] | null
           updated_at?: string | null
           user_id?: string
@@ -163,11 +199,74 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          county: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          county?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          county?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      verification_queue: {
+        Row: {
+          constituency: string | null
+          county: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          image_url: string | null
+          latitude: number | null
+          longitude: number | null
+          mpesa_transaction_id: string | null
+          notes: string | null
+          planting_date: string | null
+          rejection_reason: string | null
+          reward_amount: number | null
+          reward_paid: boolean | null
+          status: Database["public"]["Enums"]["verification_status"] | null
+          submission_phone: string | null
+          tree_name: string | null
+          user_id: string | null
+          user_phone: string | null
+          verified_at: string | null
+          verified_by: string | null
+          verifier_name: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_admin_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          approval_rate: number
+          pending_by_county: Json
+          total_approved: number
+          total_pending: number
+          total_rejected: number
+        }[]
+      }
       get_community_stats: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -188,8 +287,16 @@ export type Database = {
           verified_count: number
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       climate_zone:
         | "tropical"
         | "subtropical"
@@ -334,6 +441,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       climate_zone: [
         "tropical",
         "subtropical",

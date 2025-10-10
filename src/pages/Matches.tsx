@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Heart, Star, Trash2, Leaf, Home } from "lucide-react";
 import { toast } from "sonner";
-import { trees } from "@/data/trees";
+import { KENYAN_TREES } from "@/data/kenya";
 
 interface Match {
   id: string;
@@ -84,7 +84,7 @@ const Matches = () => {
   };
 
   const getTreeImage = (treeId: number) => {
-    const tree = trees.find((t) => t.id === treeId);
+    const tree = KENYAN_TREES.find((t) => t.dbId === treeId);
     return tree?.image;
   };
 

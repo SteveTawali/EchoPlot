@@ -1,4 +1,24 @@
 // Kenya-specific data constants
+import kenyaMango from "@/assets/kenya-mango.jpg";
+import kenyaGrevillea from "@/assets/kenya-grevillea.jpg";
+import kenyaAcacia from "@/assets/kenya-acacia.jpg";
+import kenyaBamboo from "@/assets/kenya-bamboo.jpg";
+import kenyaAvocado from "@/assets/kenya-avocado.jpg";
+import kenyaMoringa from "@/assets/kenya-moringa.jpg";
+import kenyaCroton from "@/assets/kenya-croton.jpg";
+import kenyaCypress from "@/assets/kenya-cypress.jpg";
+import kenyaMacadamia from "@/assets/kenya-macadamia.jpg";
+import kenyaNeem from "@/assets/kenya-neem.jpg";
+import kenyaCasuarina from "@/assets/kenya-casuarina.jpg";
+import kenyaPapaya from "@/assets/kenya-papaya.jpg";
+import kenyaEucalyptus from "@/assets/kenya-eucalyptus.jpg";
+import kenyaOrange from "@/assets/kenya-orange.jpg";
+import kenyaCalliandra from "@/assets/kenya-calliandra.jpg";
+import kenyaSesbania from "@/assets/kenya-sesbania.jpg";
+import kenyaCoconut from "@/assets/kenya-coconut.jpg";
+import kenyaGuava from "@/assets/kenya-guava.jpg";
+import kenyaLeucaena from "@/assets/kenya-leucaena.jpg";
+import kenyaJacaranda from "@/assets/kenya-jacaranda.jpg";
 
 export const KENYAN_COUNTIES = [
   'Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo-Marakwet', 'Embu', 'Garissa', 'Homa Bay',
@@ -24,6 +44,7 @@ export interface KenyanTreeSpecies {
   englishName: string;
   swahiliName: string;
   scientificName: string;
+  image: string;
   suitableCounties: string[];
   agroZones: string[];
   price: number; // KSH
@@ -42,6 +63,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Mango',
     swahiliName: 'Muembe',
     scientificName: 'Mangifera indica',
+    image: kenyaMango,
     suitableCounties: ['Mombasa', 'Kilifi', 'Kwale', 'Taita-Taveta', 'Makueni', 'Machakos'],
     agroZones: ['CL1', 'CL2', 'LM1', 'LM2'],
     price: 200,
@@ -57,6 +79,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Grevillea',
     swahiliName: 'Grevelia',
     scientificName: 'Grevillea robusta',
+    image: kenyaGrevillea,
     suitableCounties: ['Nyeri', 'Kiambu', 'Murang\'a', 'Embu', 'Meru', 'Nakuru'],
     agroZones: ['UH1', 'UH2', 'UM1', 'UM2', 'LH1', 'LH2'],
     price: 150,
@@ -73,6 +96,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Acacia',
     swahiliName: 'Mgunga',
     scientificName: 'Acacia tortilis',
+    image: kenyaAcacia,
     suitableCounties: ['Kajiado', 'Taita-Taveta', 'Makueni', 'Kitui', 'Baringo'],
     agroZones: ['IL1', 'IL2', 'IL3', 'LM3', 'LM4'],
     price: 100,
@@ -88,6 +112,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Bamboo',
     swahiliName: 'Mianzi',
     scientificName: 'Bambusa vulgaris',
+    image: kenyaBamboo,
     suitableCounties: ['Kisii', 'Nyamira', 'Kakamega', 'Vihiga', 'Bungoma'],
     agroZones: ['UH1', 'UH2', 'LH1', 'LH2', 'UM1'],
     price: 120,
@@ -103,6 +128,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Avocado',
     swahiliName: 'Parachichi',
     scientificName: 'Persea americana',
+    image: kenyaAvocado,
     suitableCounties: ['Murang\'a', 'Kiambu', 'Nyeri', 'Meru', 'Embu', 'Kakamega'],
     agroZones: ['LH1', 'LH2', 'UM1', 'UM2'],
     price: 300,
@@ -118,6 +144,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Moringa',
     swahiliName: 'Moringa',
     scientificName: 'Moringa oleifera',
+    image: kenyaMoringa,
     suitableCounties: ['Machakos', 'Makueni', 'Kitui', 'Mombasa', 'Kilifi'],
     agroZones: ['IL1', 'IL2', 'LM2', 'LM3', 'CL1'],
     price: 80,
@@ -133,6 +160,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Croton',
     swahiliName: 'Mukinduri',
     scientificName: 'Croton megalocarpus',
+    image: kenyaCroton,
     suitableCounties: ['Kiambu', 'Nyeri', 'Embu', 'Meru', 'Nakuru', 'Nyandarua'],
     agroZones: ['UH1', 'UH2', 'UM1', 'LH1', 'LH2'],
     price: 130,
@@ -149,6 +177,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Cypress',
     swahiliName: 'Msaipresi',
     scientificName: 'Cupressus lusitanica',
+    image: kenyaCypress,
     suitableCounties: ['Nyandarua', 'Nyeri', 'Kiambu', 'Nakuru', 'Kericho', 'Bomet'],
     agroZones: ['UH1', 'UH2', 'UH3', 'LH1'],
     price: 140,
@@ -164,6 +193,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Macadamia',
     swahiliName: 'Makadamia',
     scientificName: 'Macadamia integrifolia',
+    image: kenyaMacadamia,
     suitableCounties: ['Embu', 'Meru', 'Kiambu', 'Murang\'a', 'Kirinyaga', 'Nyeri'],
     agroZones: ['LH1', 'LH2', 'UM1', 'UM2'],
     price: 350,
@@ -179,6 +209,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Neem',
     swahiliName: 'Mwarobaini',
     scientificName: 'Azadirachta indica',
+    image: kenyaNeem,
     suitableCounties: ['Machakos', 'Makueni', 'Kitui', 'Kajiado', 'Taita-Taveta'],
     agroZones: ['IL1', 'IL2', 'LM2', 'LM3', 'LM4'],
     price: 90,
@@ -194,6 +225,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Casuarina',
     swahiliName: 'Mkenge',
     scientificName: 'Casuarina equisetifolia',
+    image: kenyaCasuarina,
     suitableCounties: ['Mombasa', 'Kilifi', 'Kwale', 'Lamu', 'Tana River'],
     agroZones: ['CL1', 'CL2', 'CL3', 'CL4'],
     price: 110,
@@ -209,6 +241,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Papaya',
     swahiliName: 'Mpapai',
     scientificName: 'Carica papaya',
+    image: kenyaPapaya,
     suitableCounties: ['Mombasa', 'Kilifi', 'Kwale', 'Makueni', 'Machakos', 'Taita-Taveta'],
     agroZones: ['CL1', 'CL2', 'LM1', 'LM2', 'IL1'],
     price: 150,
@@ -224,6 +257,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Eucalyptus',
     swahiliName: 'Mukalitusi',
     scientificName: 'Eucalyptus grandis',
+    image: kenyaEucalyptus,
     suitableCounties: ['Nakuru', 'Uasin Gishu', 'Trans-Nzoia', 'Kericho', 'Nandi'],
     agroZones: ['UH1', 'UH2', 'LH1', 'LH2', 'UM1'],
     price: 100,
@@ -239,6 +273,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Orange',
     swahiliName: 'Mchungwa',
     scientificName: 'Citrus sinensis',
+    image: kenyaOrange,
     suitableCounties: ['Machakos', 'Makueni', 'Mombasa', 'Kilifi', 'Kwale'],
     agroZones: ['LM1', 'LM2', 'CL1', 'CL2', 'IL1'],
     price: 220,
@@ -254,6 +289,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Calliandra',
     swahiliName: 'Kaliandra',
     scientificName: 'Calliandra calothyrsus',
+    image: kenyaCalliandra,
     suitableCounties: ['Embu', 'Meru', 'Nyeri', 'Kiambu', 'Murang\'a'],
     agroZones: ['LH1', 'LH2', 'UM1', 'UM2'],
     price: 80,
@@ -269,6 +305,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Sesbania',
     swahiliName: 'Msesbania',
     scientificName: 'Sesbania sesban',
+    image: kenyaSesbania,
     suitableCounties: ['Kisumu', 'Siaya', 'Busia', 'Kakamega', 'Vihiga'],
     agroZones: ['LM1', 'LM2', 'UM1', 'LH1'],
     price: 70,
@@ -284,6 +321,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Coconut',
     swahiliName: 'Mnazi',
     scientificName: 'Cocos nucifera',
+    image: kenyaCoconut,
     suitableCounties: ['Mombasa', 'Kilifi', 'Kwale', 'Lamu', 'Tana River'],
     agroZones: ['CL1', 'CL2', 'CL3'],
     price: 250,
@@ -299,6 +337,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Guava',
     swahiliName: 'Mpera',
     scientificName: 'Psidium guajava',
+    image: kenyaGuava,
     suitableCounties: ['Machakos', 'Makueni', 'Embu', 'Meru', 'Kisii'],
     agroZones: ['LM1', 'LM2', 'LM3', 'UM1'],
     price: 180,
@@ -314,6 +353,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Leucaena',
     swahiliName: 'Msindizi',
     scientificName: 'Leucaena leucocephala',
+    image: kenyaLeucaena,
     suitableCounties: ['Machakos', 'Makueni', 'Kitui', 'Taita-Taveta'],
     agroZones: ['LM2', 'LM3', 'IL1', 'IL2'],
     price: 75,
@@ -329,6 +369,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
     englishName: 'Jacaranda',
     swahiliName: 'Mjakaranda',
     scientificName: 'Jacaranda mimosifolia',
+    image: kenyaJacaranda,
     suitableCounties: ['Nairobi', 'Kiambu', 'Nakuru', 'Nyeri', 'Eldoret'],
     agroZones: ['UH1', 'UM1', 'LH1', 'LH2'],
     price: 160,

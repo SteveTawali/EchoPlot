@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Upload, MapPin, Calendar, X } from "lucide-react";
 import { extractGPSData, compressImage, validateImage } from "@/utils/imageUtils";
+import { reverseGeocode } from "@/utils/kenyaLocation";
 
 interface VerificationUploadProps {
   matchId?: string;
@@ -30,6 +31,7 @@ export const VerificationUpload = ({
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
   const [gpsData, setGpsData] = useState<{ latitude?: number; longitude?: number }>({});
+  const [locationName, setLocationName] = useState<string>("");
   const [manualLocation, setManualLocation] = useState(false);
   const [manualLat, setManualLat] = useState("");
   const [manualLng, setManualLng] = useState("");
@@ -83,6 +85,10 @@ export const VerificationUpload = ({
 
       if (metadata.latitude && metadata.longitude) {
         setGpsData(metadata);
+        // Reverse geocode to get location name
+        const location = await reverseGeocode(metadata.latitude, metadata.longitude);
+        const locationStr = [location.constituency, location.county].filter(Boolean).join(", ");
+        setLocationName(locationStr || "Location detected");
         toast.success("📍 GPS coordinates detected from photo!");
       } else if (userProfile?.latitude && userProfile?.longitude) {
         // Use profile location as fallback
@@ -90,6 +96,9 @@ export const VerificationUpload = ({
           latitude: userProfile.latitude, 
           longitude: userProfile.longitude 
         });
+        const location = await reverseGeocode(userProfile.latitude, userProfile.longitude);
+        const locationStr = [location.constituency, location.county].filter(Boolean).join(", ");
+        setLocationName(locationStr || "Location detected");
         toast.success("📍 Using your profile location");
       } else {
         // No GPS data available
@@ -114,10 +123,14 @@ export const VerificationUpload = ({
 
     toast.info("Getting your location...");
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
         setGpsData({ latitude, longitude });
         setManualLocation(false);
+        // Reverse geocode to get location name
+        const location = await reverseGeocode(latitude, longitude);
+        const locationStr = [location.constituency, location.county].filter(Boolean).join(", ");
+        setLocationName(locationStr || "Location detected");
         toast.success("📍 Location detected!");
       },
       (error) => {
@@ -301,15 +314,18 @@ export const VerificationUpload = ({
               <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 p-3 rounded-lg">
                 <div className="flex items-center gap-2 text-sm">
                   <MapPin className="w-4 h-4 text-green-600" />
-                  <span className="text-green-700 dark:text-green-300">
-                    Location: {gpsData.latitude.toFixed(6)}, {gpsData.longitude.toFixed(6)}
+                  <span className="text-green-700 dark:text-green-300 font-medium">
+                    {locationName || "Location detected"}
                   </span>
                 </div>
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1 ml-6">
+                  {gpsData.latitude.toFixed(6)}, {gpsData.longitude.toFixed(6)}
+                </p>
                 <Button
                   type="button"
                   variant="link"
                   size="sm"
-                  className="text-xs p-0 h-auto"
+                  className="text-xs p-0 h-auto ml-6"
                   onClick={() => setManualLocation(true)}
                 >
                   Enter different location

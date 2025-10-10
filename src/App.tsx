@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import AdminLayout from "@/layouts/AdminLayout";
 
 // Lazy load route components for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -20,6 +21,10 @@ const Verifications = lazy(() => import("./pages/Verifications"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Community = lazy(() => import("./pages/Community"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
+const VerificationQueue = lazy(() => import("./pages/admin/VerificationQueue"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -81,7 +86,30 @@ const App = () => (
                   } />
                   <Route path="/admin" element={
                     <ProtectedRoute requireOnboarding>
-                      <AdminDashboard />
+                      <AdminLayout>
+                        <AdminOverview />
+                      </AdminLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/verifications" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AdminLayout>
+                        <VerificationQueue />
+                      </AdminLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/users" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AdminLayout>
+                        <AdminUsers />
+                      </AdminLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/analytics" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AdminLayout>
+                        <AdminAnalytics />
+                      </AdminLayout>
                     </ProtectedRoute>
                   } />
                   <Route path="/" element={

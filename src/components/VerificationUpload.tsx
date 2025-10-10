@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -30,8 +30,33 @@ export const VerificationUpload = ({
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
   const [gpsData, setGpsData] = useState<{ latitude?: number; longitude?: number }>({});
+  const [manualLocation, setManualLocation] = useState(false);
+  const [manualLat, setManualLat] = useState("");
+  const [manualLng, setManualLng] = useState("");
   const [notes, setNotes] = useState("");
   const [plantingDate, setPlantingDate] = useState(new Date().toISOString().split('T')[0]);
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  // Load user profile on mount
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      
+      if (data) {
+        setUserProfile(data);
+        // Pre-fill with user's profile location if available
+        if (data.latitude && data.longitude) {
+          setGpsData({ latitude: data.latitude, longitude: data.longitude });
+        }
+      }
+    };
+    loadProfile();
+  }, [user]);
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,15 +77,26 @@ export const VerificationUpload = ({
       setSelectedImage(file);
       setProgress(30);
 
-      // Extract GPS data
+      // Extract GPS data from photo
       const metadata = await extractGPSData(file);
-      setGpsData(metadata);
       setProgress(50);
 
       if (metadata.latitude && metadata.longitude) {
-        toast.success("📍 GPS coordinates detected!");
+        setGpsData(metadata);
+        toast.success("📍 GPS coordinates detected from photo!");
+      } else if (userProfile?.latitude && userProfile?.longitude) {
+        // Use profile location as fallback
+        setGpsData({ 
+          latitude: userProfile.latitude, 
+          longitude: userProfile.longitude 
+        });
+        toast.success("📍 Using your profile location");
       } else {
-        toast.info("No GPS data found. You can manually enter location.");
+        // No GPS data available
+        setManualLocation(true);
+        toast.info("💡 Please enter location or enable GPS", {
+          description: "Location helps verify your planting"
+        });
       }
     } catch (error) {
       toast.error("Failed to process image");
@@ -70,9 +106,50 @@ export const VerificationUpload = ({
     }
   };
 
+  const useCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation not supported by your browser");
+      return;
+    }
+
+    toast.info("Getting your location...");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setGpsData({ latitude, longitude });
+        setManualLocation(false);
+        toast.success("📍 Location detected!");
+      },
+      (error) => {
+        toast.error("Failed to get location. Please enter manually.");
+        setManualLocation(true);
+      }
+    );
+  };
+
   const handleUpload = async () => {
     if (!selectedImage || !user) {
       toast.error("Please select an image");
+      return;
+    }
+
+    // Get final GPS coordinates
+    let finalLat = gpsData.latitude;
+    let finalLng = gpsData.longitude;
+
+    // If manual location is being used
+    if (manualLocation && manualLat && manualLng) {
+      finalLat = parseFloat(manualLat);
+      finalLng = parseFloat(manualLng);
+      
+      if (isNaN(finalLat) || isNaN(finalLng)) {
+        toast.error("Invalid coordinates. Please check your input.");
+        return;
+      }
+    }
+
+    if (!finalLat || !finalLng) {
+      toast.error("Location required. Please enable GPS or enter manually.");
       return;
     }
 
@@ -99,6 +176,13 @@ export const VerificationUpload = ({
         .from("planting-verifications")
         .getPublicUrl(fileName);
 
+      // Get user profile for county/constituency
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("county, constituency, phone")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
       // Create verification record
       setProgress(80);
       const { error: insertError } = await supabase
@@ -108,8 +192,11 @@ export const VerificationUpload = ({
           tree_match_id: matchId || null,
           tree_name: treeName,
           image_url: urlData.publicUrl,
-          latitude: gpsData.latitude,
-          longitude: gpsData.longitude,
+          latitude: finalLat,
+          longitude: finalLng,
+          county: profile?.county,
+          constituency: profile?.constituency,
+          phone: profile?.phone,
           planting_date: plantingDate,
           notes: notes || null,
         });
@@ -117,7 +204,9 @@ export const VerificationUpload = ({
       if (insertError) throw insertError;
 
       setProgress(100);
-      toast.success("🌳 Planting verified! Awaiting review.");
+      toast.success("🌳 Verification submitted successfully!", {
+        description: "Awaiting review by county moderator"
+      });
       
       // Cleanup
       URL.revokeObjectURL(preview);
@@ -190,14 +279,103 @@ export const VerificationUpload = ({
             </Button>
           </div>
 
-          {gpsData.latitude && gpsData.longitude && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-              <MapPin className="w-4 h-4" />
-              <span>
-                Location: {gpsData.latitude.toFixed(4)}, {gpsData.longitude.toFixed(4)}
-              </span>
+          {/* Location Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>Location *</Label>
+              {!manualLocation && !gpsData.latitude && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={useCurrentLocation}
+                  disabled={uploading}
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Use Current Location
+                </Button>
+              )}
             </div>
-          )}
+
+            {gpsData.latitude && gpsData.longitude && !manualLocation ? (
+              <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 p-3 rounded-lg">
+                <div className="flex items-center gap-2 text-sm">
+                  <MapPin className="w-4 h-4 text-green-600" />
+                  <span className="text-green-700 dark:text-green-300">
+                    Location: {gpsData.latitude.toFixed(6)}, {gpsData.longitude.toFixed(6)}
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="text-xs p-0 h-auto"
+                  onClick={() => setManualLocation(true)}
+                >
+                  Enter different location
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="latitude" className="text-xs">Latitude</Label>
+                    <Input
+                      id="latitude"
+                      type="number"
+                      step="0.000001"
+                      placeholder="-1.2921"
+                      value={manualLat}
+                      onChange={(e) => setManualLat(e.target.value)}
+                      disabled={uploading}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="longitude" className="text-xs">Longitude</Label>
+                    <Input
+                      id="longitude"
+                      type="number"
+                      step="0.000001"
+                      placeholder="36.8219"
+                      value={manualLng}
+                      onChange={(e) => setManualLng(e.target.value)}
+                      disabled={uploading}
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={useCurrentLocation}
+                    disabled={uploading}
+                    className="flex-1"
+                  >
+                    <MapPin className="w-4 h-4 mr-2" />
+                    Detect Location
+                  </Button>
+                  {gpsData.latitude && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setManualLocation(false);
+                        setManualLat("");
+                        setManualLng("");
+                      }}
+                    >
+                      Use Auto-detected
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Location is required for verification. Enable GPS or enter coordinates manually.
+                </p>
+              </div>
+            )}
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="planting-date">Planting Date</Label>

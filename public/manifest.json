@@ -1,0 +1,29 @@
+{
+  "name": "TreeMatch Kenya - Plant the Right Tree",
+  "short_name": "TreeMatch",
+  "description": "Match with the perfect tree species for your Kenyan farm. Science-backed recommendations based on your location, soil, and climate.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#22C55E",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/placeholder.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["agriculture", "education", "environment"],
+  "screenshots": [],
+  "lang": "en-KE",
+  "dir": "ltr",
+  "prefer_related_applications": false
+}

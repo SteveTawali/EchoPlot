@@ -2,10 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TreeMatch - Tinder for Tree Planting</title>
-    <meta name="description" content="Swipe right to match with the perfect tree species for your land. Make a real environmental impact, one match at a time." />
-    <meta name="author" content="TreeMatch" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>TreeMatch Kenya - Panda Mti Sahihi</title>
+    <meta name="description" content="Match with the perfect tree species for your Kenyan farm. Science-backed recommendations based on your county, soil type, and agro-ecological zone." />
+    <meta name="author" content="TreeMatch Kenya" />
+    <meta name="keywords" content="Kenya trees, agroforestry, tree planting, KEFRI, indigenous trees, farm forestry" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#22C55E" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TreeMatch" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/placeholder.svg" />
 
     <meta property="og:title" content="TreeMatch - Tinder for Tree Planting" />
     <meta property="og:description" content="Swipe right to match with the perfect tree species for your land. Make a real environmental impact, one match at a time." />
@@ -20,5 +29,15 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Register service worker for offline support
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => console.log('SW registered:', registration))
+            .catch(error => console.log('SW registration failed:', error));
+        });
+      }
+    </script>
   </body>
 </html>

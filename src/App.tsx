@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/hooks/useLanguage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 
 // Lazy load route components for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -48,6 +49,7 @@ const App = () => (
           <LanguageProvider>
             <Toaster />
             <Sonner />
+            <OfflineIndicator />
             <BrowserRouter>
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>

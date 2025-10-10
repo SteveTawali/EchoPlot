@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - TreeMatch Kenya</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+      color: #F1F5F9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    .container {
+      text-align: center;
+      max-width: 500px;
+    }
+    
+    .icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 2rem;
+      background: #22C55E;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #22C55E;
+    }
+    
+    p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      color: #CBD5E1;
+    }
+    
+    .button {
+      display: inline-block;
+      padding: 1rem 2rem;
+      background: #22C55E;
+      color: #0F172A;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: transform 0.2s;
+    }
+    
+    .button:hover {
+      transform: translateY(-2px);
+    }
+    
+    .info {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: rgba(34, 197, 94, 0.1);
+      border-radius: 8px;
+      border-left: 4px solid #22C55E;
+    }
+    
+    .info h2 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: #22C55E;
+    }
+    
+    .info ul {
+      text-align: left;
+      list-style-position: inside;
+      color: #CBD5E1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🌳</div>
+    <h1>Hakuna Mtandao / No Connection</h1>
+    <p>
+      You're currently offline. TreeMatch needs an internet connection to access your matches and verification data.
+    </p>
+    <a href="/" class="button" onclick="window.location.reload()">Jaribu Tena / Try Again</a>
+    
+    <div class="info">
+      <h2>💡 While Offline:</h2>
+      <ul>
+        <li>Your data is safely stored</li>
+        <li>Previous matches remain visible</li>
+        <li>Connect to continue planting</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

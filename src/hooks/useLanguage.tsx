@@ -54,6 +54,10 @@ const translations = {
     'trees.price': 'Price',
     'trees.county': 'County',
     'trees.agroZone': 'Agro-Ecological Zone',
+    
+    // Offline
+    'offline.back_online': 'Back online - syncing data...',
+    'offline.offline_mode': 'You are offline. Some features may be limited.',
   },
   sw: {
     // Navigation
@@ -98,6 +102,10 @@ const translations = {
     'trees.price': 'Bei',
     'trees.county': 'Kaunti',
     'trees.agroZone': 'Eneo la Kilimo',
+    
+    // Offline
+    'offline.back_online': 'Umerudi mtandaoni - inasawazisha data...',
+    'offline.offline_mode': 'Uko nje ya mtandao. Baadhi ya vipengele vinaweza kuwa na kikomo.',
   }
 };
 

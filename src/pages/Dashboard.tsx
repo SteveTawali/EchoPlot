@@ -49,12 +49,17 @@ const Dashboard = () => {
   });
   const [locations, setLocations] = useState<PlantingLocation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mapReady, setMapReady] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchDashboardData();
   }, [user]);
+
+  useEffect(() => {
+    setMapReady(true);
+  }, []);
 
   const fetchDashboardData = async () => {
     if (!user) return;
@@ -194,7 +199,7 @@ const Dashboard = () => {
           </div>
 
           {/* Map */}
-          {locations.length > 0 ? (
+          {mapReady && locations.length > 0 ? (
             <Card className="p-6">
               <h2 className="text-2xl font-bold mb-4">Your Planting Locations</h2>
               <div className="h-96 rounded-lg overflow-hidden">

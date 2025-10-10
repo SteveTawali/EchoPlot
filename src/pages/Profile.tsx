@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Home } from 'lucide-react';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -58,6 +59,16 @@ const Profile = () => {
       {/* Profile Header */}
       <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background p-6 border-b">
         <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+            >
+              <Home className="w-4 h-4 mr-2" />
+              {language === 'en' ? 'Home' : 'Nyumbani'}
+            </Button>
+          </div>
           <div className="flex items-start gap-4">
             <Avatar className="h-20 w-20 border-2 border-primary">
               <AvatarImage src={profile?.avatar_url} />

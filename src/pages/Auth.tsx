@@ -45,7 +45,7 @@ const Auth = () => {
             toast.error(error.message || "Failed to sign up");
           }
         } else {
-          toast.success("Account created! Welcome to Canopy Connections.");
+          toast.success("Account created! Welcome to EchoPlot.");
           navigate("/onboarding");
         }
       }
@@ -63,9 +63,9 @@ const Auth = () => {
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
             <Leaf className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-center">Canopy Connections</h1>
+          <h1 className="text-3xl font-bold text-center">EchoPlot</h1>
           <p className="text-muted-foreground text-center mt-2">
-            {isLogin ? "Welcome back!" : "Join our ecological community"}
+            {isLogin ? "Welcome back!" : "Transform tree planting into intergenerational stewardship"}
           </p>
         </div>
 

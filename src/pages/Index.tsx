@@ -26,7 +26,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Leaf className="w-6 h-6 text-primary" />
-            <span className="font-bold text-lg">Canopy Connections</span>
+            <span className="font-bold text-lg">EchoPlot</span>
           </div>
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
@@ -71,17 +71,17 @@ const Index = () => {
           <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-primary/30">
             <Leaf className="w-4 h-4 text-primary-foreground" />
             <span className="text-sm text-primary-foreground font-medium">
-              Swipe Right to Save the Planet
+              Creating Ripples of Impact Through Time
             </span>
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-            Tinder for Tree Planting
+            Welcome to EchoPlot! 🌊🌳
           </h1>
           
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Match with the perfect tree species for your land. Swipe right to plant, swipe left to pass. 
-            Every match makes a real difference.
+            EchoPlot transforms tree planting from a simple agricultural activity into a profound act of intergenerational stewardship.
+            Every tree you plant creates ripples that echo through generations.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

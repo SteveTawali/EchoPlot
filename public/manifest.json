@@ -1,7 +1,7 @@
 {
-  "name": "TreeMatch Kenya - Plant the Right Tree",
-  "short_name": "TreeMatch",
-  "description": "Match with the perfect tree species for your Kenyan farm. Science-backed recommendations based on your location, soil, and climate.",
+  "name": "EchoPlot - Intergenerational Tree Stewardship",
+  "short_name": "EchoPlot",
+  "description": "Transform tree planting from a simple agricultural activity into a profound act of intergenerational stewardship. Create ripples of environmental impact through time.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0F172A",
@@ -9,21 +9,15 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/placeholder.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/placeholder.svg",
+      "src": "/favicon.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "categories": ["agriculture", "education", "environment"],
+  "categories": ["agriculture", "education", "environment", "sustainability"],
   "screenshots": [],
-  "lang": "en-KE",
+  "lang": "en",
   "dir": "ltr",
   "prefer_related_applications": false
 }

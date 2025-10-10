@@ -1,26 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { ArrowLeft, Leaf, MapPin, TrendingUp, Calendar, TreeDeciduous } from "lucide-react";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 
-// Fix Leaflet icon issues
-import icon from "leaflet/dist/images/marker-icon.png";
-import iconShadow from "leaflet/dist/images/marker-shadow.png";
-
-const DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
+const PlantingMap = lazy(() => import("@/components/PlantingMap").then(m => ({ default: m.PlantingMap })));
 
 interface DashboardStats {
   totalMatches: number;
@@ -49,17 +35,12 @@ const Dashboard = () => {
   });
   const [locations, setLocations] = useState<PlantingLocation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mapReady, setMapReady] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchDashboardData();
   }, [user]);
-
-  useEffect(() => {
-    setMapReady(true);
-  }, []);
 
   const fetchDashboardData = async () => {
     if (!user) return;
@@ -112,14 +93,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  // Calculate center point for map
-  const centerLat = locations.length > 0
-    ? locations.reduce((sum, loc) => sum + loc.latitude, 0) / locations.length
-    : 51.505;
-  const centerLng = locations.length > 0
-    ? locations.reduce((sum, loc) => sum + loc.longitude, 0) / locations.length
-    : -0.09;
 
   return (
     <div className="min-h-screen bg-background">
@@ -199,37 +172,17 @@ const Dashboard = () => {
           </div>
 
           {/* Map */}
-          {mapReady && locations.length > 0 ? (
+          {locations.length > 0 ? (
             <Card className="p-6">
               <h2 className="text-2xl font-bold mb-4">Your Planting Locations</h2>
               <div className="h-96 rounded-lg overflow-hidden">
-                {/* @ts-ignore - Leaflet types issue */}
-                <MapContainer
-                  center={[centerLat, centerLng]}
-                  zoom={6}
-                  scrollWheelZoom={false}
-                  style={{ height: "100%", width: "100%" }}
-                >
-                  {/* @ts-ignore - Leaflet types issue */}
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-                  {locations.map((location) => (
-                    <Marker
-                      key={location.id}
-                      position={[location.latitude, location.longitude]}
-                    >
-                      <Popup>
-                        <div className="p-2">
-                          <p className="font-semibold">{location.tree_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Planted: {new Date(location.planting_date).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  ))}
-                </MapContainer>
+                <Suspense fallback={
+                  <div className="h-full flex items-center justify-center bg-muted">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+                  </div>
+                }>
+                  <PlantingMap locations={locations} />
+                </Suspense>
               </div>
             </Card>
           ) : (

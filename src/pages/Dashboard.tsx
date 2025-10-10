@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Leaf, MapPin, TrendingUp, Calendar, TreeDeciduous } from "lucide-react";
 
-const PlantingMap = lazy(() => import("@/components/PlantingMap").then(m => ({ default: m.PlantingMap })));
+const PlantingMapLazy = lazy(() => 
+  import("@/components/PlantingMap").then((module) => ({
+    default: module.PlantingMap
+  }))
+);
 
 interface DashboardStats {
   totalMatches: number;
@@ -181,7 +185,7 @@ const Dashboard = () => {
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
                   </div>
                 }>
-                  <PlantingMap locations={locations} />
+                  <PlantingMapLazy locations={locations} />
                 </Suspense>
               </div>
             </Card>

@@ -107,9 +107,9 @@ const Matches = () => {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-          <Button variant="ghost" onClick={() => navigate("/")}>
+          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Swipe
+            Back to Dashboard
           </Button>
           <div className="flex items-center gap-2">
             <Leaf className="w-6 h-6 text-primary" />

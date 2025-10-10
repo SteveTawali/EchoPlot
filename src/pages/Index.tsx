@@ -26,6 +26,9 @@ const Index = () => {
             <span className="font-bold text-lg">Canopy Connections</span>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+              Dashboard
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate("/verifications")}>
               Verifications
             </Button>

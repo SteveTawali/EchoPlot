@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Matches from "./pages/Matches";
 import Verifications from "./pages/Verifications";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,11 @@ const App = () => (
             <Route path="/verifications" element={
               <ProtectedRoute requireOnboarding>
                 <Verifications />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard" element={
+              <ProtectedRoute requireOnboarding>
+                <Dashboard />
               </ProtectedRoute>
             } />
             <Route path="/" element={

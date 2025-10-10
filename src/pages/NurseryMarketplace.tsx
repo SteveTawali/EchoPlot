@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Leaf, Phone, ArrowLeft, CheckCircle } from 'lucide-react';
+import { ShoppingCart, Leaf, Phone, ArrowLeft, CheckCircle, Home } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const NurseryMarketplace = () => {
@@ -86,9 +86,9 @@ const NurseryMarketplace = () => {
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background p-6 border-b">
         <div className="max-w-6xl mx-auto">
-          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {language === 'en' ? 'Back' : 'Rudi'}
+          <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="mb-4">
+            <Home className="w-4 h-4 mr-2" />
+            {language === 'en' ? 'Home' : 'Nyumbani'}
           </Button>
           <div className="flex items-center gap-3 mb-2">
             <ShoppingCart className="h-8 w-8 text-primary" />

@@ -13,7 +13,8 @@ import {
   LogOut,
   Shield,
   TreePine,
-  Building2
+  Building2,
+  Home
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -83,6 +84,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <Separator />
 
         <nav className="flex-1 p-4 space-y-2">
+          <Link to="/">
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+            >
+              <Home className="h-4 w-4 mr-3" />
+              Home
+            </Button>
+          </Link>
           {navItems.map((item) => (
             <Link key={item.path} to={item.path}>
               <Button

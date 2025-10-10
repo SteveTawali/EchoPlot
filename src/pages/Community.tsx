@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Trophy, Users, TreePine, Leaf } from "lucide-react";
+import { Trophy, Users, TreePine, Leaf, Home } from "lucide-react";
 import { toast } from "sonner";
 
 interface LeaderboardEntry {
@@ -64,7 +64,21 @@ const Community = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+          <Button variant="ghost" onClick={() => navigate("/")}>
+            <Home className="w-4 h-4 mr-2" />
+            Home
+          </Button>
+          <div className="flex items-center gap-2">
+            <Users className="w-6 h-6 text-primary" />
+            <span className="font-bold text-lg">Community</span>
+          </div>
+        </div>
+      </nav>
+
+      <div className="container mx-auto px-4 py-8 max-w-6xl pt-20">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
           <h1 className="text-4xl font-bold mb-2 text-foreground">Community</h1>

@@ -25,7 +25,7 @@ interface SwipeInterfaceProps {
 
 export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [matchedTrees, setMatchedTrees] = useState<KenyanTreeSpecies[]>([]);
+  const [matchedTreeIds, setMatchedTreeIds] = useState<Set<number>>(new Set());
   const [isAnimating, setIsAnimating] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -40,10 +40,29 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
 
   const currentTree = filteredTrees[currentIndex];
 
-  // Fetch user profile and weather data
+  // Fetch user profile, weather data, and existing matches
   useEffect(() => {
     fetchProfileAndWeather();
+    fetchExistingMatches();
   }, [user]);
+
+  const fetchExistingMatches = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("tree_matches")
+        .select("tree_id")
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      
+      const matchedIds = new Set(data?.map(m => m.tree_id) || []);
+      setMatchedTreeIds(matchedIds);
+    } catch (error) {
+      console.error("Error fetching matches:", error);
+    }
+  };
 
   const fetchProfileAndWeather = async () => {
     if (!user) return;
@@ -138,13 +157,23 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   const handleSwipe = async (direction: 'left' | 'right') => {
     if (isAnimating || !user) return;
 
+    // Check if already matched
+    if (direction === 'right' && matchedTreeIds.has(currentTree.dbId)) {
+      toast.info(`Already matched with ${currentTree.englishName}!`, {
+        description: "Check your matches page to see all your trees.",
+      });
+      
+      setTimeout(() => {
+        setCurrentIndex(currentIndex + 1);
+      }, 300);
+      return;
+    }
+
     setIsAnimating(true);
     setSwipeDirection(direction);
 
     if (direction === 'right') {
-      setMatchedTrees([...matchedTrees, currentTree]);
-      
-      // Save match to database
+      // Save match to database first
       try {
         const { error } = await supabase
           .from("tree_matches")
@@ -155,13 +184,20 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
             compatibility_score: compatibilityScore,
           });
 
-        if (error && !error.message.includes("duplicate")) {
-          throw error;
+        if (error) {
+          if (error.message.includes("duplicate")) {
+            toast.info(`Already matched with ${currentTree.englishName}!`);
+          } else {
+            throw error;
+          }
+        } else {
+          // Only update local state if database insert succeeds
+          setMatchedTreeIds(prev => new Set([...prev, currentTree.dbId]));
+          
+          toast.success(`🌳 Matched with ${currentTree.englishName}!`, {
+            description: `${compatibilityScore}% compatibility - Great choice!`,
+          });
         }
-
-        toast.success(`🌳 Matched with ${currentTree.englishName}!`, {
-          description: `${compatibilityScore}% compatibility - Great choice!`,
-        });
       } catch (error: any) {
         console.error("Error saving match:", error);
         toast.error("Failed to save match");
@@ -181,7 +217,6 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
 
   const handleReset = () => {
     setCurrentIndex(0);
-    setMatchedTrees([]);
     toast.info("Starting over!", {
       description: "Let's find the perfect trees for you!",
     });
@@ -195,28 +230,22 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
             All Done! 🎉
           </h2>
           <p className="text-lg text-muted-foreground max-w-md">
-            You've matched with {matchedTrees.length} tree{matchedTrees.length !== 1 ? 's' : ''}!
+            You've seen all available trees!
           </p>
-          {matchedTrees.length > 0 && (
-            <div className="mt-6 space-y-2">
-              <p className="font-semibold text-primary">Your Tree Matches:</p>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {matchedTrees.map((tree) => (
-                  <span
-                    key={tree.id}
-                    className="px-4 py-2 bg-secondary text-secondary-foreground rounded-full font-medium"
-                  >
-                    {tree.englishName}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+          <p className="text-muted-foreground">
+            Check your matches page to see the {matchedTreeIds.size} tree{matchedTreeIds.size !== 1 ? 's' : ''} you've matched with.
+          </p>
         </div>
-        <Button variant="hero" size="lg" onClick={handleReset} className="gap-2">
-          <RotateCcw className="w-5 h-5" />
-          Start Over
-        </Button>
+        <div className="flex gap-4">
+          <Button variant="hero" size="lg" onClick={handleReset} className="gap-2">
+            <RotateCcw className="w-5 h-5" />
+            Start Over
+          </Button>
+          <Button variant="outline" size="lg" onClick={() => navigate("/matches")} className="gap-2">
+            <Heart className="w-5 h-5" />
+            View Matches
+          </Button>
+        </div>
       </div>
     );
   }
@@ -229,10 +258,10 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           variant="outline"
           onClick={() => navigate("/matches")}
           className="gap-2 flex-1"
-          aria-label={`View your ${matchedTrees.length} tree matches`}
+          aria-label={`View your ${matchedTreeIds.size} tree matches`}
         >
           <History className="w-4 h-4" aria-hidden="true" />
-          Matches ({matchedTrees.length})
+          Matches ({matchedTreeIds.size})
         </Button>
       </div>
 
@@ -309,7 +338,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
         
         <div className="text-center">
           <p className="text-sm text-muted-foreground" aria-live="polite">
-            {matchedTrees.length} tree{matchedTrees.length !== 1 ? 's' : ''} matched
+            {matchedTreeIds.size} tree{matchedTreeIds.size !== 1 ? 's' : ''} matched
           </p>
         </div>
 

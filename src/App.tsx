@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
+import Matches from "./pages/Matches";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,11 @@ const App = () => (
             <Route path="/onboarding" element={
               <ProtectedRoute>
                 <Onboarding />
+              </ProtectedRoute>
+            } />
+            <Route path="/matches" element={
+              <ProtectedRoute requireOnboarding>
+                <Matches />
               </ProtectedRoute>
             } />
             <Route path="/" element={

@@ -8,6 +8,8 @@ interface TreeCardProps {
   climate: string;
   growthRate: string;
   onSwipe?: (direction: 'left' | 'right') => void;
+  compatibilityScore?: number;
+  description?: string;
 }
 
 export const TreeCard = ({
@@ -17,7 +19,15 @@ export const TreeCard = ({
   benefits,
   climate,
   growthRate,
+  compatibilityScore,
+  description,
 }: TreeCardProps) => {
+  const getCompatibilityColor = (score: number) => {
+    if (score >= 80) return "bg-green-500";
+    if (score >= 60) return "bg-yellow-500";
+    return "bg-orange-500";
+  };
+
   return (
     <Card className="w-full max-w-sm overflow-hidden shadow-card hover:shadow-hover transition-all duration-300">
       <div className="relative h-96 overflow-hidden">
@@ -27,6 +37,16 @@ export const TreeCard = ({
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        
+        {/* Compatibility Badge */}
+        {compatibilityScore !== undefined && (
+          <div className="absolute top-4 right-4">
+            <div className={`${getCompatibilityColor(compatibilityScore)} px-4 py-2 rounded-full backdrop-blur-sm`}>
+              <span className="text-white font-bold text-lg">{compatibilityScore}%</span>
+            </div>
+          </div>
+        )}
+
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
           <h2 className="text-3xl font-bold mb-1">{name}</h2>
           <p className="text-sm opacity-90 italic">{scientificName}</p>
@@ -34,6 +54,12 @@ export const TreeCard = ({
       </div>
       
       <div className="p-6 space-y-4 bg-gradient-card">
+        {description && (
+          <div>
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
+        )}
+        
         <div>
           <h3 className="text-sm font-semibold text-muted-foreground mb-2">Benefits</h3>
           <div className="flex flex-wrap gap-2">

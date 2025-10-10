@@ -68,6 +68,39 @@ export type Database = {
         }
         Relationships: []
       }
+      tree_matches: {
+        Row: {
+          compatibility_score: number
+          favorited: boolean | null
+          id: string
+          matched_at: string | null
+          notes: string | null
+          tree_id: number
+          tree_name: string
+          user_id: string
+        }
+        Insert: {
+          compatibility_score: number
+          favorited?: boolean | null
+          id?: string
+          matched_at?: string | null
+          notes?: string | null
+          tree_id: number
+          tree_name: string
+          user_id: string
+        }
+        Update: {
+          compatibility_score?: number
+          favorited?: boolean | null
+          id?: string
+          matched_at?: string | null
+          notes?: string | null
+          tree_id?: number
+          tree_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

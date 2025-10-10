@@ -1,18 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TreeCard } from "./TreeCard";
 import { Button } from "@/components/ui/button";
-import { X, Heart, RotateCcw } from "lucide-react";
+import { X, Heart, RotateCcw, History } from "lucide-react";
 import { toast } from "sonner";
-
-interface Tree {
-  id: number;
-  name: string;
-  scientificName: string;
-  image: string;
-  benefits: string[];
-  climate: string;
-  growthRate: string;
-}
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { calculateCompatibility } from "@/utils/compatibility";
+import type { Tree } from "@/data/trees";
 
 interface SwipeInterfaceProps {
   trees: Tree[];
@@ -23,20 +18,69 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   const [matchedTrees, setMatchedTrees] = useState<Tree[]>([]);
   const [isAnimating, setIsAnimating] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [compatibilityScore, setCompatibilityScore] = useState(0);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const currentTree = trees[currentIndex];
 
-  const handleSwipe = (direction: 'left' | 'right') => {
-    if (isAnimating) return;
+  // Fetch user profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+      
+      setUserProfile(data);
+    };
+
+    fetchProfile();
+  }, [user]);
+
+  // Calculate compatibility when tree or profile changes
+  useEffect(() => {
+    if (currentTree && userProfile) {
+      const score = calculateCompatibility(currentTree, userProfile);
+      setCompatibilityScore(score);
+    }
+  }, [currentTree, userProfile]);
+
+  const handleSwipe = async (direction: 'left' | 'right') => {
+    if (isAnimating || !user) return;
 
     setIsAnimating(true);
     setSwipeDirection(direction);
 
     if (direction === 'right') {
       setMatchedTrees([...matchedTrees, currentTree]);
-      toast.success(`🌳 Matched with ${currentTree.name}!`, {
-        description: "Great choice for your land!",
-      });
+      
+      // Save match to database
+      try {
+        const { error } = await supabase
+          .from("tree_matches")
+          .insert({
+            user_id: user.id,
+            tree_id: currentTree.id,
+            tree_name: currentTree.name,
+            compatibility_score: compatibilityScore,
+          });
+
+        if (error && !error.message.includes("duplicate")) {
+          throw error;
+        }
+
+        toast.success(`🌳 Matched with ${currentTree.name}!`, {
+          description: `${compatibilityScore}% compatibility - Great choice!`,
+        });
+      } catch (error: any) {
+        console.error("Error saving match:", error);
+        toast.error("Failed to save match");
+      }
     } else {
       toast.info(`Passed on ${currentTree.name}`, {
         description: "Keep swiping to find your perfect tree!",
@@ -94,6 +138,16 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
 
   return (
     <div className="flex flex-col items-center space-y-6 animate-fade-in">
+      {/* View Matches Button */}
+      <Button
+        variant="outline"
+        onClick={() => navigate("/matches")}
+        className="gap-2"
+      >
+        <History className="w-4 h-4" />
+        View Your Matches ({matchedTrees.length})
+      </Button>
+
       {/* Progress indicator */}
       <div className="w-full max-w-sm">
         <div className="flex justify-between text-sm text-muted-foreground mb-2">
@@ -118,7 +172,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
             isAnimating && swipeDirection === 'right' ? 'animate-swipe-right' : ''
           }`}
         >
-          <TreeCard {...currentTree} />
+          <TreeCard {...currentTree} compatibilityScore={compatibilityScore} />
         </div>
 
         {/* Next card preview */}

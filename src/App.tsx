@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { LanguageProvider } from "@/hooks/useLanguage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,6 +18,7 @@ const Matches = lazy(() => import("./pages/Matches"));
 const Verifications = lazy(() => import("./pages/Verifications"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Community = lazy(() => import("./pages/Community"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -43,47 +45,54 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/onboarding" element={
-                  <ProtectedRoute>
-                    <Onboarding />
-                  </ProtectedRoute>
-                } />
-                <Route path="/matches" element={
-                  <ProtectedRoute requireOnboarding>
-                    <Matches />
-                  </ProtectedRoute>
-                } />
-                <Route path="/verifications" element={
-                  <ProtectedRoute requireOnboarding>
-                    <Verifications />
-                  </ProtectedRoute>
-                } />
-                <Route path="/dashboard" element={
-                  <ProtectedRoute requireOnboarding>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/community" element={
-                  <ProtectedRoute requireOnboarding>
-                    <Community />
-                  </ProtectedRoute>
-                } />
-                <Route path="/" element={
-                  <ProtectedRoute requireOnboarding>
-                    <Index />
-                  </ProtectedRoute>
-                } />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
+          <LanguageProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/onboarding" element={
+                    <ProtectedRoute>
+                      <Onboarding />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/matches" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Matches />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/verifications" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Verifications />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/dashboard" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/community" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Community />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin" element={
+                    <ProtectedRoute requireOnboarding>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Index />
+                    </ProtectedRoute>
+                  } />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </LanguageProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

@@ -228,33 +228,7 @@ export type Database = {
       }
     }
     Views: {
-      verification_queue: {
-        Row: {
-          constituency: string | null
-          county: string | null
-          created_at: string | null
-          full_name: string | null
-          id: string | null
-          image_url: string | null
-          latitude: number | null
-          longitude: number | null
-          mpesa_transaction_id: string | null
-          notes: string | null
-          planting_date: string | null
-          rejection_reason: string | null
-          reward_amount: number | null
-          reward_paid: boolean | null
-          status: Database["public"]["Enums"]["verification_status"] | null
-          submission_phone: string | null
-          tree_name: string | null
-          user_id: string | null
-          user_phone: string | null
-          verified_at: string | null
-          verified_by: string | null
-          verifier_name: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_admin_stats: {
@@ -285,6 +259,33 @@ export type Database = {
           total_matches: number
           user_id: string
           verified_count: number
+        }[]
+      }
+      get_verification_queue: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          constituency: string
+          county: string
+          created_at: string
+          full_name: string
+          id: string
+          image_url: string
+          latitude: number
+          longitude: number
+          mpesa_transaction_id: string
+          notes: string
+          planting_date: string
+          rejection_reason: string
+          reward_amount: number
+          reward_paid: boolean
+          status: Database["public"]["Enums"]["verification_status"]
+          submission_phone: string
+          tree_name: string
+          user_id: string
+          user_phone: string
+          verified_at: string
+          verified_by: string
+          verifier_name: string
         }[]
       }
       has_role: {

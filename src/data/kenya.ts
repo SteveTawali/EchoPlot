@@ -126,6 +126,217 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
       en: 'Nutritious multipurpose tree with medicinal properties',
       sw: 'Mti wenye lishe na dawa za asili, una matumizi mengi'
     }
+  },
+  {
+    id: 'croton',
+    dbId: 7,
+    englishName: 'Croton',
+    swahiliName: 'Mukinduri',
+    scientificName: 'Croton megalocarpus',
+    suitableCounties: ['Kiambu', 'Nyeri', 'Embu', 'Meru', 'Nakuru', 'Nyandarua'],
+    agroZones: ['UH1', 'UH2', 'UM1', 'LH1', 'LH2'],
+    price: 130,
+    kefriCode: 'CRT001',
+    uses: ['timber', 'conservation', 'shade'],
+    description: {
+      en: 'Indigenous tree excellent for fuel wood and soil improvement',
+      sw: 'Mti wa asili mzuri kwa kuni na kuboresha udongo'
+    }
+  },
+  {
+    id: 'cypress',
+    dbId: 8,
+    englishName: 'Cypress',
+    swahiliName: 'Msaipresi',
+    scientificName: 'Cupressus lusitanica',
+    suitableCounties: ['Nyandarua', 'Nyeri', 'Kiambu', 'Nakuru', 'Kericho', 'Bomet'],
+    agroZones: ['UH1', 'UH2', 'UH3', 'LH1'],
+    price: 140,
+    uses: ['timber', 'conservation'],
+    description: {
+      en: 'Popular timber tree for highland areas and water catchments',
+      sw: 'Mti wa mbao maarufu kwa maeneo ya juu na maeneo ya kuhifadhi maji'
+    }
+  },
+  {
+    id: 'macadamia',
+    dbId: 9,
+    englishName: 'Macadamia',
+    swahiliName: 'Makadamia',
+    scientificName: 'Macadamia integrifolia',
+    suitableCounties: ['Embu', 'Meru', 'Kiambu', 'Murang\'a', 'Kirinyaga', 'Nyeri'],
+    agroZones: ['LH1', 'LH2', 'UM1', 'UM2'],
+    price: 350,
+    uses: ['fruit'],
+    description: {
+      en: 'Premium nut tree with high export value',
+      sw: 'Mti wa njugu zenye thamani kubwa ya biashara ya nje'
+    }
+  },
+  {
+    id: 'neem',
+    dbId: 10,
+    englishName: 'Neem',
+    swahiliName: 'Mwarobaini',
+    scientificName: 'Azadirachta indica',
+    suitableCounties: ['Machakos', 'Makueni', 'Kitui', 'Kajiado', 'Taita-Taveta'],
+    agroZones: ['IL1', 'IL2', 'LM2', 'LM3', 'LM4'],
+    price: 90,
+    uses: ['medicine', 'timber', 'conservation'],
+    description: {
+      en: 'Versatile tree with medicinal and pest control properties',
+      sw: 'Mti wenye matumizi mengi kwa dawa na kudhibiti wadudu'
+    }
+  },
+  {
+    id: 'casuarina',
+    dbId: 11,
+    englishName: 'Casuarina',
+    swahiliName: 'Mkenge',
+    scientificName: 'Casuarina equisetifolia',
+    suitableCounties: ['Mombasa', 'Kilifi', 'Kwale', 'Lamu', 'Tana River'],
+    agroZones: ['CL1', 'CL2', 'CL3', 'CL4'],
+    price: 110,
+    uses: ['timber', 'conservation'],
+    description: {
+      en: 'Coastal tree excellent for windbreaks and soil stabilization',
+      sw: 'Mti wa pwani mzuri kwa kuzuia upepo na kudhibiti mmomonyoko'
+    }
+  },
+  {
+    id: 'papaya',
+    dbId: 12,
+    englishName: 'Papaya',
+    swahiliName: 'Mpapai',
+    scientificName: 'Carica papaya',
+    suitableCounties: ['Mombasa', 'Kilifi', 'Kwale', 'Makueni', 'Machakos', 'Taita-Taveta'],
+    agroZones: ['CL1', 'CL2', 'LM1', 'LM2', 'IL1'],
+    price: 150,
+    uses: ['fruit', 'medicine'],
+    description: {
+      en: 'Fast-growing fruit tree with nutritious and medicinal fruits',
+      sw: 'Mti wa matunda unaokua haraka wenye lishe na dawa'
+    }
+  },
+  {
+    id: 'eucalyptus',
+    dbId: 13,
+    englishName: 'Eucalyptus',
+    swahiliName: 'Mukalitusi',
+    scientificName: 'Eucalyptus grandis',
+    suitableCounties: ['Nakuru', 'Uasin Gishu', 'Trans-Nzoia', 'Kericho', 'Nandi'],
+    agroZones: ['UH1', 'UH2', 'LH1', 'LH2', 'UM1'],
+    price: 100,
+    uses: ['timber', 'conservation'],
+    description: {
+      en: 'Fast-growing timber tree suitable for commercial plantations',
+      sw: 'Mti wa mbao unaokua haraka unaofaa mashamba ya biashara'
+    }
+  },
+  {
+    id: 'orange',
+    dbId: 14,
+    englishName: 'Orange',
+    swahiliName: 'Mchungwa',
+    scientificName: 'Citrus sinensis',
+    suitableCounties: ['Machakos', 'Makueni', 'Mombasa', 'Kilifi', 'Kwale'],
+    agroZones: ['LM1', 'LM2', 'CL1', 'CL2', 'IL1'],
+    price: 220,
+    uses: ['fruit'],
+    description: {
+      en: 'Citrus fruit tree for fresh fruit and juice production',
+      sw: 'Mti wa matunda ya machungwa kwa matunda safi na juice'
+    }
+  },
+  {
+    id: 'calliandra',
+    dbId: 15,
+    englishName: 'Calliandra',
+    swahiliName: 'Kaliandra',
+    scientificName: 'Calliandra calothyrsus',
+    suitableCounties: ['Embu', 'Meru', 'Nyeri', 'Kiambu', 'Murang\'a'],
+    agroZones: ['LH1', 'LH2', 'UM1', 'UM2'],
+    price: 80,
+    uses: ['fodder', 'conservation'],
+    description: {
+      en: 'Nitrogen-fixing fodder tree excellent for dairy farming',
+      sw: 'Mti wa malisho unaozalisha nitrojeni mzuri kwa ufugaji wa ng\'ombe wa maziwa'
+    }
+  },
+  {
+    id: 'sesbania',
+    dbId: 16,
+    englishName: 'Sesbania',
+    swahiliName: 'Msesbania',
+    scientificName: 'Sesbania sesban',
+    suitableCounties: ['Kisumu', 'Siaya', 'Busia', 'Kakamega', 'Vihiga'],
+    agroZones: ['LM1', 'LM2', 'UM1', 'LH1'],
+    price: 70,
+    uses: ['fodder', 'conservation'],
+    description: {
+      en: 'Fast-growing fodder tree that enriches soil fertility',
+      sw: 'Mti wa malisho unaokua haraka unaoboresha rutuba ya udongo'
+    }
+  },
+  {
+    id: 'coconut',
+    dbId: 17,
+    englishName: 'Coconut',
+    swahiliName: 'Mnazi',
+    scientificName: 'Cocos nucifera',
+    suitableCounties: ['Mombasa', 'Kilifi', 'Kwale', 'Lamu', 'Tana River'],
+    agroZones: ['CL1', 'CL2', 'CL3'],
+    price: 250,
+    uses: ['fruit', 'timber'],
+    description: {
+      en: 'Iconic coastal tree producing nuts, oil, and building materials',
+      sw: 'Mti maarufu wa pwani unazalisha nazi, mafuta na vifaa vya ujenzi'
+    }
+  },
+  {
+    id: 'guava',
+    dbId: 18,
+    englishName: 'Guava',
+    swahiliName: 'Mpera',
+    scientificName: 'Psidium guajava',
+    suitableCounties: ['Machakos', 'Makueni', 'Embu', 'Meru', 'Kisii'],
+    agroZones: ['LM1', 'LM2', 'LM3', 'UM1'],
+    price: 180,
+    uses: ['fruit', 'medicine'],
+    description: {
+      en: 'Hardy fruit tree with nutritious vitamin-rich fruits',
+      sw: 'Mti wa matunda wenye nguvu na matunda yenye vitamini nyingi'
+    }
+  },
+  {
+    id: 'leucaena',
+    dbId: 19,
+    englishName: 'Leucaena',
+    swahiliName: 'Msindizi',
+    scientificName: 'Leucaena leucocephala',
+    suitableCounties: ['Machakos', 'Makueni', 'Kitui', 'Taita-Taveta'],
+    agroZones: ['LM2', 'LM3', 'IL1', 'IL2'],
+    price: 75,
+    uses: ['fodder', 'conservation', 'timber'],
+    description: {
+      en: 'Multi-purpose legume tree for fodder and soil improvement',
+      sw: 'Mti wa kunde wenye matumizi mengi kwa malisho na kuboresha udongo'
+    }
+  },
+  {
+    id: 'jacaranda',
+    dbId: 20,
+    englishName: 'Jacaranda',
+    swahiliName: 'Mjakaranda',
+    scientificName: 'Jacaranda mimosifolia',
+    suitableCounties: ['Nairobi', 'Kiambu', 'Nakuru', 'Nyeri', 'Eldoret'],
+    agroZones: ['UH1', 'UM1', 'LH1', 'LH2'],
+    price: 160,
+    uses: ['shade', 'timber'],
+    description: {
+      en: 'Ornamental tree with beautiful purple flowers for urban areas',
+      sw: 'Mti wa mapambo wenye maua mazuri ya urujuani kwa miji'
+    }
   }
 ];
 

@@ -188,7 +188,7 @@ export default function VerificationQueue() {
     try {
       const user = (await supabase.auth.getUser()).data.user;
       const updates = {
-        status: bulkAction === 'approve' ? 'verified' : 'rejected',
+        status: (bulkAction === 'approve' ? 'verified' : 'rejected') as 'verified' | 'rejected',
         verified_at: new Date().toISOString(),
         verified_by: user?.id,
         ...(bulkAction === 'reject' && { rejection_reason: rejectionReason })

@@ -19,7 +19,6 @@ const KenyaOnboarding = lazy(() => import("./pages/KenyaOnboarding"));
 const Matches = lazy(() => import("./pages/Matches"));
 const Verifications = lazy(() => import("./pages/Verifications"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Community = lazy(() => import("./pages/Community"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
 const VerificationQueue = lazy(() => import("./pages/admin/VerificationQueue"));
@@ -85,11 +84,6 @@ const App = () => (
                   <Route path="/dashboard" element={
                     <ProtectedRoute requireOnboarding>
                       <Dashboard />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/community" element={
-                    <ProtectedRoute requireOnboarding>
-                      <Community />
                     </ProtectedRoute>
                   } />
                   <Route path="/nursery" element={

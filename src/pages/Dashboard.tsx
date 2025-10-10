@@ -283,9 +283,6 @@ const Dashboard = () => {
 
           {/* Action Buttons */}
           <div className="flex gap-4 justify-center flex-wrap">
-            <Button onClick={() => navigate("/community")} variant="outline">
-              View Community
-            </Button>
             <Button onClick={() => navigate("/matches")} variant="outline">
               Find More Matches
             </Button>

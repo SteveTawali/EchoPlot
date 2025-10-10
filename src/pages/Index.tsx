@@ -33,9 +33,6 @@ const Index = () => {
             <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
               Dashboard
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/community")}>
-              Community
-            </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate("/nursery")}>
               <ShoppingCart className="w-4 h-4 mr-2" />
               Nursery

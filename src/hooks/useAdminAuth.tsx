@@ -23,14 +23,18 @@ export const useAdminAuth = () => {
           .from('user_roles')
           .select('role, county')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle() instead of single() to handle 0 rows
 
+        // No error if there's no row - user just has no role
         if (error) {
           console.error('Error fetching user role:', error);
           setRole('user');
         } else if (data) {
           setRole(data.role as UserRole);
           setCounty(data.county);
+        } else {
+          // No role assigned - default to user
+          setRole('user');
         }
       } catch (error) {
         console.error('Error:', error);

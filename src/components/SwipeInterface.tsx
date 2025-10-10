@@ -32,10 +32,11 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   const [weatherData, setWeatherData] = useState<any>(null);
   const [seasonalData, setSeasonalData] = useState<SeasonalRecommendation | null>(null);
   const [successData, setSuccessData] = useState<SuccessProbability | null>(null);
+  const [filteredTrees, setFilteredTrees] = useState<KenyanTreeSpecies[]>(trees);
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const currentTree = trees[currentIndex];
+  const currentTree = filteredTrees[currentIndex];
 
   // Fetch user profile and weather data
   useEffect(() => {
@@ -52,6 +53,33 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       .single();
     
     setUserProfile(data);
+
+    // Filter and sort trees based on user's location
+    if (data) {
+      const treesWithScores = trees.map(tree => {
+        const score = calculateKenyanCompatibility(tree, data);
+        return { tree, score };
+      });
+      
+      // Sort by compatibility score (highest first)
+      treesWithScores.sort((a, b) => b.score - a.score);
+      
+      // Filter to only show trees with at least 50% compatibility
+      const suitable = treesWithScores
+        .filter(({ score }) => score >= 50)
+        .map(({ tree }) => tree);
+      
+      if (suitable.length > 0) {
+        setFilteredTrees(suitable);
+        toast.success(`Found ${suitable.length} trees perfect for your location!`, {
+          description: `${data.county}, ${data.agro_zone || 'Agro-zone not set'}`
+        });
+      } else {
+        // If no highly compatible trees, show all but notify user
+        setFilteredTrees(trees);
+        toast.info('Showing all trees - update your profile for better matches');
+      }
+    }
 
     // If user has location data, fetch weather
     if (data?.latitude && data?.longitude) {
@@ -157,7 +185,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
     });
   };
 
-  if (currentIndex >= trees.length) {
+  if (currentIndex >= filteredTrees.length) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[600px] space-y-6 animate-fade-in">
         <div className="text-center space-y-4">
@@ -213,19 +241,19 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       <div className="w-full max-w-sm">
         <div className="flex justify-between text-sm text-muted-foreground mb-2">
           <span>Progress</span>
-          <span aria-live="polite">{currentIndex + 1} / {trees.length}</span>
+          <span aria-live="polite">{currentIndex + 1} / {filteredTrees.length}</span>
         </div>
         <div 
           className="h-2 bg-muted rounded-full overflow-hidden"
           role="progressbar"
           aria-valuenow={currentIndex + 1}
           aria-valuemin={1}
-          aria-valuemax={trees.length}
-          aria-label={`Tree selection progress: ${currentIndex + 1} of ${trees.length}`}
+          aria-valuemax={filteredTrees.length}
+          aria-label={`Tree selection progress: ${currentIndex + 1} of ${filteredTrees.length}`}
         >
           <div 
             className="h-full bg-primary transition-all duration-300"
-            style={{ width: `${((currentIndex + 1) / trees.length) * 100}%` }}
+            style={{ width: `${((currentIndex + 1) / filteredTrees.length) * 100}%` }}
           />
         </div>
       </div>
@@ -251,9 +279,9 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
         </div>
 
         {/* Next card preview */}
-        {currentIndex + 1 < trees.length && (
+        {currentIndex + 1 < filteredTrees.length && (
           <div className="absolute inset-0 -z-10 scale-95 opacity-50" aria-hidden="true">
-            <KenyanTreeCard {...trees[currentIndex + 1]} />
+            <KenyanTreeCard {...filteredTrees[currentIndex + 1]} />
           </div>
         )}
       </div>

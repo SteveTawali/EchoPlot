@@ -8,7 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { 
-  calculateCompatibility, 
+  calculateCompatibility,
+  calculateCompatibilityWithWeather,
   getSeasonalRecommendation, 
   calculateSuccessProbability,
   type SeasonalRecommendation,
@@ -87,13 +88,10 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   useEffect(() => {
     if (currentTree && userProfile) {
       // Use enhanced compatibility if weather data is available
-      let score: number;
-      if (weatherData && userProfile.latitude && userProfile.longitude) {
-        const { calculateCompatibilityWithWeather } = require("@/utils/compatibility");
-        score = calculateCompatibilityWithWeather(currentTree, userProfile, weatherData);
-      } else {
-        score = calculateCompatibility(currentTree, userProfile);
-      }
+      const score = weatherData && userProfile.latitude && userProfile.longitude
+        ? calculateCompatibilityWithWeather(currentTree, userProfile, weatherData)
+        : calculateCompatibility(currentTree, userProfile);
+      
       setCompatibilityScore(score);
       
       // Calculate seasonal recommendation

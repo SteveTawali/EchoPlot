@@ -25,6 +25,13 @@ const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
 const VerificationQueue = lazy(() => import("./pages/admin/VerificationQueue"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
+const Profile = lazy(() => import("./pages/Profile"));
+const ProfileDashboard = lazy(() => import("./pages/profile/ProfileDashboard"));
+const ProfileEdit = lazy(() => import("./pages/profile/ProfileEdit"));
+const PlantingHistory = lazy(() => import("./pages/profile/PlantingHistory"));
+const RewardsWallet = lazy(() => import("./pages/profile/RewardsWallet"));
+const Achievements = lazy(() => import("./pages/profile/Achievements"));
+const ProfileSettings = lazy(() => import("./pages/profile/ProfileSettings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -112,6 +119,19 @@ const App = () => (
                       </AdminLayout>
                     </ProtectedRoute>
                   } />
+                  <Route path="/profile" element={
+                    <ProtectedRoute requireOnboarding>
+                      <Profile />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<ProfileDashboard />} />
+                    <Route path="dashboard" element={<ProfileDashboard />} />
+                    <Route path="edit" element={<ProfileEdit />} />
+                    <Route path="plantings" element={<PlantingHistory />} />
+                    <Route path="rewards" element={<RewardsWallet />} />
+                    <Route path="achievements" element={<Achievements />} />
+                    <Route path="settings" element={<ProfileSettings />} />
+                  </Route>
                   <Route path="/" element={
                     <ProtectedRoute requireOnboarding>
                       <Index />

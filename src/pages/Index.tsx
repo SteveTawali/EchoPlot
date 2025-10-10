@@ -76,7 +76,7 @@ const Index = () => {
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-            Welcome to EchoPlot! 🌊🌳
+            Welcome to EchoPlot! 🌳
           </h1>
           
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { TreeCard } from "./TreeCard";
+import { LocationDetector } from "./LocationDetector";
 import { Button } from "@/components/ui/button";
 import { X, Heart, RotateCcw, History } from "lucide-react";
 import { toast } from "sonner";
@@ -28,34 +29,51 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
 
   // Fetch user profile and weather data
   useEffect(() => {
-    const fetchProfileAndWeather = async () => {
-      if (!user) return;
-      
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-      
-      setUserProfile(data);
-
-      // If user has location data, fetch weather
-      if (data?.latitude && data?.longitude) {
-        const { data: weather } = await supabase.functions.invoke('get-weather-data', {
-          body: {
-            latitude: data.latitude,
-            longitude: data.longitude,
-          },
-        });
-        
-        if (weather) {
-          setWeatherData(weather);
-        }
-      }
-    };
-
     fetchProfileAndWeather();
   }, [user]);
+
+  const fetchProfileAndWeather = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+    
+    setUserProfile(data);
+
+    // If user has location data, fetch weather
+    if (data?.latitude && data?.longitude) {
+      const { data: weather } = await supabase.functions.invoke('get-weather-data', {
+        body: {
+          latitude: data.latitude,
+          longitude: data.longitude,
+        },
+      });
+      
+      if (weather) {
+        setWeatherData(weather);
+      }
+    }
+  };
+
+  const handleLocationDetected = async (location: { latitude: number; longitude: number; weatherData: any }) => {
+    // Update user profile with new location
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        latitude: location.latitude,
+        longitude: location.longitude,
+      })
+      .eq("user_id", user?.id);
+
+    if (!error) {
+      setWeatherData(location.weatherData);
+      await fetchProfileAndWeather();
+      toast.success("Location updated! Compatibility scores refreshed.");
+    }
+  };
 
   // Calculate compatibility when tree or profile changes
   useEffect(() => {
@@ -160,16 +178,21 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
 
   return (
     <div className="flex flex-col items-center space-y-6 animate-fade-in" role="region" aria-label="Tree matching interface">
-      {/* View Matches Button */}
-      <Button
-        variant="outline"
-        onClick={() => navigate("/matches")}
-        className="gap-2"
-        aria-label={`View your ${matchedTrees.length} tree matches`}
-      >
-        <History className="w-4 h-4" aria-hidden="true" />
-        View Your Matches ({matchedTrees.length})
-      </Button>
+      {/* Location Detection & View Matches */}
+      <div className="flex gap-3 w-full max-w-sm">
+        <Button
+          variant="outline"
+          onClick={() => navigate("/matches")}
+          className="gap-2 flex-1"
+          aria-label={`View your ${matchedTrees.length} tree matches`}
+        >
+          <History className="w-4 h-4" aria-hidden="true" />
+          Matches ({matchedTrees.length})
+        </Button>
+      </div>
+
+      {/* GPS Detection */}
+      <LocationDetector onLocationDetected={handleLocationDetected} className="w-full max-w-sm" />
 
       {/* Progress indicator */}
       <div className="w-full max-w-sm">

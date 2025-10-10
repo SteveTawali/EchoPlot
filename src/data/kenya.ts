@@ -20,6 +20,7 @@ export const AGRO_ECOLOGICAL_ZONES = [
 
 export interface KenyanTreeSpecies {
   id: string;
+  dbId: number; // For database compatibility
   englishName: string;
   swahiliName: string;
   scientificName: string;
@@ -37,6 +38,7 @@ export interface KenyanTreeSpecies {
 export const KENYAN_TREES: KenyanTreeSpecies[] = [
   {
     id: 'mango',
+    dbId: 1,
     englishName: 'Mango',
     swahiliName: 'Muembe',
     scientificName: 'Mangifera indica',
@@ -51,6 +53,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
   },
   {
     id: 'grevillea',
+    dbId: 2,
     englishName: 'Grevillea',
     swahiliName: 'Grevelia',
     scientificName: 'Grevillea robusta',
@@ -66,6 +69,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
   },
   {
     id: 'acacia',
+    dbId: 3,
     englishName: 'Acacia',
     swahiliName: 'Mgunga',
     scientificName: 'Acacia tortilis',
@@ -80,6 +84,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
   },
   {
     id: 'bamboo',
+    dbId: 4,
     englishName: 'Bamboo',
     swahiliName: 'Mianzi',
     scientificName: 'Bambusa vulgaris',
@@ -94,6 +99,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
   },
   {
     id: 'avocado',
+    dbId: 5,
     englishName: 'Avocado',
     swahiliName: 'Parachichi',
     scientificName: 'Persea americana',
@@ -108,6 +114,7 @@ export const KENYAN_TREES: KenyanTreeSpecies[] = [
   },
   {
     id: 'moringa',
+    dbId: 6,
     englishName: 'Moringa',
     swahiliName: 'Moringa',
     scientificName: 'Moringa oleifera',

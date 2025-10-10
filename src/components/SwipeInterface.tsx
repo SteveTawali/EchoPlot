@@ -8,22 +8,23 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { 
-  calculateCompatibility,
-  calculateCompatibilityWithWeather,
-  getSeasonalRecommendation, 
-  calculateSuccessProbability,
+  calculateKenyanCompatibility,
+  calculateKenyanCompatibilityWithWeather,
+  getKenyanSeasonalRecommendation, 
+  calculateKenyanSuccessProbability,
   type SeasonalRecommendation,
   type SuccessProbability
-} from "@/utils/compatibility";
-import type { Tree } from "@/data/trees";
+} from "@/utils/kenyaCompatibility";
+import type { KenyanTreeSpecies } from "@/data/kenya";
+import { KenyanTreeCard } from "./KenyanTreeCard";
 
 interface SwipeInterfaceProps {
-  trees: Tree[];
+  trees: KenyanTreeSpecies[];
 }
 
 export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [matchedTrees, setMatchedTrees] = useState<Tree[]>([]);
+  const [matchedTrees, setMatchedTrees] = useState<KenyanTreeSpecies[]>([]);
   const [isAnimating, setIsAnimating] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -87,19 +88,19 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   // Calculate compatibility when tree or profile changes
   useEffect(() => {
     if (currentTree && userProfile) {
-      // Use enhanced compatibility if weather data is available
+      // Use Kenya-specific compatibility calculation
       const score = weatherData && userProfile.latitude && userProfile.longitude
-        ? calculateCompatibilityWithWeather(currentTree, userProfile, weatherData)
-        : calculateCompatibility(currentTree, userProfile);
+        ? calculateKenyanCompatibilityWithWeather(currentTree, userProfile, weatherData)
+        : calculateKenyanCompatibility(currentTree, userProfile);
       
       setCompatibilityScore(score);
       
-      // Calculate seasonal recommendation
-      const seasonal = getSeasonalRecommendation(currentTree, userProfile, weatherData);
+      // Calculate Kenya-specific seasonal recommendation
+      const seasonal = getKenyanSeasonalRecommendation(currentTree, userProfile, weatherData);
       setSeasonalData(seasonal);
       
-      // Calculate success probability
-      const success = calculateSuccessProbability(currentTree, userProfile, weatherData);
+      // Calculate Kenya-specific success probability
+      const success = calculateKenyanSuccessProbability(currentTree, userProfile, weatherData);
       setSuccessData(success);
     }
   }, [currentTree, userProfile, weatherData]);
@@ -119,8 +120,8 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           .from("tree_matches")
           .insert({
             user_id: user.id,
-            tree_id: currentTree.id,
-            tree_name: currentTree.name,
+            tree_id: currentTree.dbId,
+            tree_name: currentTree.englishName,
             compatibility_score: compatibilityScore,
           });
 
@@ -128,7 +129,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           throw error;
         }
 
-        toast.success(`🌳 Matched with ${currentTree.name}!`, {
+        toast.success(`🌳 Matched with ${currentTree.englishName}!`, {
           description: `${compatibilityScore}% compatibility - Great choice!`,
         });
       } catch (error: any) {
@@ -136,7 +137,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
         toast.error("Failed to save match");
       }
     } else {
-      toast.info(`Passed on ${currentTree.name}`, {
+      toast.info(`Passed on ${currentTree.englishName}`, {
         description: "Keep swiping to find your perfect tree!",
       });
     }
@@ -175,7 +176,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
                     key={tree.id}
                     className="px-4 py-2 bg-secondary text-secondary-foreground rounded-full font-medium"
                   >
-                    {tree.name}
+                    {tree.englishName}
                   </span>
                 ))}
               </div>
@@ -241,7 +242,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           role="group"
           aria-label="Current tree card"
         >
-          <TreeCard 
+          <KenyanTreeCard 
             {...currentTree} 
             compatibilityScore={compatibilityScore}
             seasonalData={seasonalData || undefined}
@@ -252,7 +253,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
         {/* Next card preview */}
         {currentIndex + 1 < trees.length && (
           <div className="absolute inset-0 -z-10 scale-95 opacity-50" aria-hidden="true">
-            <TreeCard {...trees[currentIndex + 1]} />
+            <KenyanTreeCard {...trees[currentIndex + 1]} />
           </div>
         )}
       </div>
@@ -265,7 +266,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           className="w-16 h-16 rounded-full"
           onClick={() => handleSwipe('left')}
           disabled={isAnimating}
-          aria-label={`Pass on ${currentTree?.name}`}
+          aria-label={`Pass on ${currentTree?.englishName}`}
         >
           <X className="w-8 h-8 text-destructive" aria-hidden="true" />
         </Button>
@@ -282,7 +283,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           className="w-16 h-16 rounded-full"
           onClick={() => handleSwipe('right')}
           disabled={isAnimating}
-          aria-label={`Match with ${currentTree?.name}`}
+          aria-label={`Match with ${currentTree?.englishName}`}
         >
           <Heart className="w-8 h-8 text-secondary" aria-hidden="true" />
         </Button>

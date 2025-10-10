@@ -1,5 +1,5 @@
 import { SwipeInterface } from "@/components/SwipeInterface";
-import { trees } from "@/data/trees";
+import { KENYAN_TREES } from "@/data/kenya";
 import { Button } from "@/components/ui/button";
 import { Leaf, Heart, Globe, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -164,7 +164,7 @@ const Index = () => {
             </p>
           </div>
           
-          <SwipeInterface trees={trees} />
+          <SwipeInterface trees={KENYAN_TREES} />
         </div>
       </section>
 

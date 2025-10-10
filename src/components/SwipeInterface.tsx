@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { TreeCard } from "./TreeCard";
 import { LocationDetector } from "./LocationDetector";
 import { Button } from "@/components/ui/button";
-import { X, Heart, RotateCcw, History } from "lucide-react";
+import { X, Heart, RotateCcw, History, Info } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,6 +17,7 @@ import {
 } from "@/utils/kenyaCompatibility";
 import type { KenyanTreeSpecies } from "@/data/kenya";
 import { KenyanTreeCard } from "./KenyanTreeCard";
+import { TreeDetailDialog } from "./TreeDetailDialog";
 
 interface SwipeInterfaceProps {
   trees: KenyanTreeSpecies[];
@@ -33,6 +34,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   const [seasonalData, setSeasonalData] = useState<SeasonalRecommendation | null>(null);
   const [successData, setSuccessData] = useState<SuccessProbability | null>(null);
   const [filteredTrees, setFilteredTrees] = useState<KenyanTreeSpecies[]>(trees);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -262,13 +264,14 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       <div className="relative w-full max-w-sm h-[600px]">
         {/* Current card */}
         <div
-          className={`absolute inset-0 transition-all duration-300 ${
+          className={`absolute inset-0 transition-all duration-300 cursor-pointer ${
             isAnimating && swipeDirection === 'left' ? 'animate-swipe-left' : ''
           } ${
             isAnimating && swipeDirection === 'right' ? 'animate-swipe-right' : ''
           }`}
           role="group"
           aria-label="Current tree card"
+          onClick={() => setShowDetailDialog(true)}
         >
           <KenyanTreeCard 
             {...currentTree} 
@@ -276,6 +279,11 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
             seasonalData={seasonalData || undefined}
             successData={successData || undefined}
           />
+          {/* Click indicator */}
+          <div className="absolute top-4 left-4 bg-primary/90 text-primary-foreground px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
+            <Info className="w-4 h-4" />
+            Click for details & purchase
+          </div>
         </div>
 
         {/* Next card preview */}
@@ -319,8 +327,18 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
 
       {/* Instructions */}
       <p className="text-sm text-center text-muted-foreground max-w-sm" role="note">
-        Swipe right to match with trees perfect for your land, or left to pass
+        Click card for details • Swipe right to match • Swipe left to pass
       </p>
+
+      {/* Tree Detail Dialog */}
+      <TreeDetailDialog
+        tree={currentTree}
+        open={showDetailDialog}
+        onOpenChange={setShowDetailDialog}
+        compatibilityScore={compatibilityScore}
+        seasonalData={seasonalData || undefined}
+        successData={successData || undefined}
+      />
     </div>
   );
 };

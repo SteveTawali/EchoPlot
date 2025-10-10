@@ -1,6 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { useEffect, useState } from "react";
 
 // Fix Leaflet icon issues
 import icon from "leaflet/dist/images/marker-icon.png";
@@ -29,7 +30,9 @@ interface PlantingMapProps {
 }
 
 export const PlantingMap = ({ locations }: PlantingMapProps) => {
-  if (locations.length === 0) return null;
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
+  if (!isClient || locations.length === 0) return null;
 
   const centerLat = locations.reduce((sum, loc) => sum + loc.latitude, 0) / locations.length;
   const centerLng = locations.reduce((sum, loc) => sum + loc.longitude, 0) / locations.length;

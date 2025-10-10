@@ -14,7 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          climate_zone: Database["public"]["Enums"]["climate_zone"] | null
+          conservation_goals:
+            | Database["public"]["Enums"]["conservation_goal"][]
+            | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          land_size_hectares: number | null
+          latitude: number | null
+          longitude: number | null
+          onboarding_completed: boolean | null
+          soil_type: Database["public"]["Enums"]["soil_type"] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          climate_zone?: Database["public"]["Enums"]["climate_zone"] | null
+          conservation_goals?:
+            | Database["public"]["Enums"]["conservation_goal"][]
+            | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          land_size_hectares?: number | null
+          latitude?: number | null
+          longitude?: number | null
+          onboarding_completed?: boolean | null
+          soil_type?: Database["public"]["Enums"]["soil_type"] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          climate_zone?: Database["public"]["Enums"]["climate_zone"] | null
+          conservation_goals?:
+            | Database["public"]["Enums"]["conservation_goal"][]
+            | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          land_size_hectares?: number | null
+          latitude?: number | null
+          longitude?: number | null
+          onboarding_completed?: boolean | null
+          soil_type?: Database["public"]["Enums"]["soil_type"] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +76,22 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      climate_zone:
+        | "tropical"
+        | "subtropical"
+        | "temperate"
+        | "cold"
+        | "arid"
+        | "mediterranean"
+      conservation_goal:
+        | "carbon_sequestration"
+        | "biodiversity"
+        | "erosion_control"
+        | "water_management"
+        | "wildlife_habitat"
+        | "food_production"
+        | "aesthetic_beauty"
+      soil_type: "clay" | "sandy" | "loamy" | "silty" | "peaty" | "chalky"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +218,25 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      climate_zone: [
+        "tropical",
+        "subtropical",
+        "temperate",
+        "cold",
+        "arid",
+        "mediterranean",
+      ],
+      conservation_goal: [
+        "carbon_sequestration",
+        "biodiversity",
+        "erosion_control",
+        "water_management",
+        "wildlife_habitat",
+        "food_production",
+        "aesthetic_beauty",
+      ],
+      soil_type: ["clay", "sandy", "loamy", "silty", "peaty", "chalky"],
+    },
   },
 } as const

@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminProtectedRoute } from "@/components/AdminProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
@@ -92,32 +93,32 @@ const App = () => (
                     </ProtectedRoute>
                   } />
                   <Route path="/admin" element={
-                    <ProtectedRoute requireOnboarding>
+                    <AdminProtectedRoute>
                       <AdminLayout>
                         <AdminOverview />
                       </AdminLayout>
-                    </ProtectedRoute>
+                    </AdminProtectedRoute>
                   } />
                   <Route path="/admin/verifications" element={
-                    <ProtectedRoute requireOnboarding>
+                    <AdminProtectedRoute>
                       <AdminLayout>
                         <VerificationQueue />
                       </AdminLayout>
-                    </ProtectedRoute>
+                    </AdminProtectedRoute>
                   } />
                   <Route path="/admin/users" element={
-                    <ProtectedRoute requireOnboarding>
+                    <AdminProtectedRoute>
                       <AdminLayout>
                         <AdminUsers />
                       </AdminLayout>
-                    </ProtectedRoute>
+                    </AdminProtectedRoute>
                   } />
                   <Route path="/admin/analytics" element={
-                    <ProtectedRoute requireOnboarding>
+                    <AdminProtectedRoute>
                       <AdminLayout>
                         <AdminAnalytics />
                       </AdminLayout>
-                    </ProtectedRoute>
+                    </AdminProtectedRoute>
                   } />
                   <Route path="/profile" element={
                     <ProtectedRoute requireOnboarding>

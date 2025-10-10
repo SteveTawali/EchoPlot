@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -11,6 +12,7 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute = ({ children, requireOnboarding = false }: ProtectedRouteProps) => {
   const { user, loading: authLoading } = useAuth();
+  const { isAdmin, isModerator, loading: roleLoading } = useAdminAuth();
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
@@ -33,7 +35,7 @@ export const ProtectedRoute = ({ children, requireOnboarding = false }: Protecte
     }
   }, [user, authLoading, requireOnboarding]);
 
-  if (authLoading || checkingProfile) {
+  if (authLoading || checkingProfile || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-card">
         <div className="space-y-4 w-full max-w-md p-4">
@@ -47,6 +49,11 @@ export const ProtectedRoute = ({ children, requireOnboarding = false }: Protecte
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Redirect admins and moderators to admin panel
+  if ((isAdmin || isModerator) && requireOnboarding) {
+    return <Navigate to="/admin" replace />;
   }
 
   if (requireOnboarding && !onboardingCompleted) {

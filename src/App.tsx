@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Lazy load route components for better performance
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
-const Onboarding = lazy(() => import("./pages/Onboarding"));
+const KenyaOnboarding = lazy(() => import("./pages/KenyaOnboarding"));
 const Matches = lazy(() => import("./pages/Matches"));
 const Verifications = lazy(() => import("./pages/Verifications"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -54,7 +54,7 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/onboarding" element={
                     <ProtectedRoute>
-                      <Onboarding />
+                      <KenyaOnboarding />
                     </ProtectedRoute>
                   } />
                   <Route path="/matches" element={

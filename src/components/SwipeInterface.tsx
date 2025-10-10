@@ -20,14 +20,15 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [compatibilityScore, setCompatibilityScore] = useState(0);
+  const [weatherData, setWeatherData] = useState<any>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const currentTree = trees[currentIndex];
 
-  // Fetch user profile
+  // Fetch user profile and weather data
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileAndWeather = async () => {
       if (!user) return;
       
       const { data } = await supabase
@@ -37,18 +38,39 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
         .single();
       
       setUserProfile(data);
+
+      // If user has location data, fetch weather
+      if (data?.latitude && data?.longitude) {
+        const { data: weather } = await supabase.functions.invoke('get-weather-data', {
+          body: {
+            latitude: data.latitude,
+            longitude: data.longitude,
+          },
+        });
+        
+        if (weather) {
+          setWeatherData(weather);
+        }
+      }
     };
 
-    fetchProfile();
+    fetchProfileAndWeather();
   }, [user]);
 
   // Calculate compatibility when tree or profile changes
   useEffect(() => {
     if (currentTree && userProfile) {
-      const score = calculateCompatibility(currentTree, userProfile);
+      // Use enhanced compatibility if weather data is available
+      let score: number;
+      if (weatherData && userProfile.latitude && userProfile.longitude) {
+        const { calculateCompatibilityWithWeather } = require("@/utils/compatibility");
+        score = calculateCompatibilityWithWeather(currentTree, userProfile, weatherData);
+      } else {
+        score = calculateCompatibility(currentTree, userProfile);
+      }
       setCompatibilityScore(score);
     }
-  }, [currentTree, userProfile]);
+  }, [currentTree, userProfile, weatherData]);
 
   const handleSwipe = async (direction: 'left' | 'right') => {
     if (isAnimating || !user) return;

@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Loader2 } from "lucide-react";
+import { requestLocationPermission, determineClimateZone, determineSoilType } from "@/utils/locationService";
 
 type SoilType = "clay" | "sandy" | "loamy" | "silty" | "peaty" | "chalky";
 type ClimateZone = "tropical" | "subtropical" | "temperate" | "cold" | "arid" | "mediterranean";
@@ -45,6 +46,7 @@ const conservationGoals: { value: ConservationGoal; label: string }[] = [
 const Onboarding = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -55,7 +57,55 @@ const Onboarding = () => {
     latitude: "",
     longitude: "",
     goals: [] as ConservationGoal[],
+    weatherData: null as any,
   });
+
+  const handleDetectLocation = async () => {
+    setDetectingLocation(true);
+    try {
+      const location = await requestLocationPermission();
+      
+      // Get weather data from our edge function
+      const { data: weatherData, error } = await supabase.functions.invoke('get-weather-data', {
+        body: { 
+          latitude: location.latitude, 
+          longitude: location.longitude 
+        }
+      });
+
+      if (error) throw error;
+
+      // Auto-populate location fields
+      setFormData(prev => ({
+        ...prev,
+        latitude: location.latitude.toString(),
+        longitude: location.longitude.toString(),
+        weatherData,
+      }));
+
+      // Auto-detect climate zone and soil type based on weather data
+      if (weatherData?.current) {
+        const detectedClimate = determineClimateZone(location.latitude, weatherData.current.temperature);
+        const detectedSoil = determineSoilType(weatherData.current.humidity, weatherData.estimated_annual_rainfall);
+        
+        setFormData(prev => ({
+          ...prev,
+          climateZone: detectedClimate as ClimateZone,
+          soilType: detectedSoil,
+        }));
+
+        toast.success(`Location detected: ${weatherData.location.name}, ${weatherData.location.country}`, {
+          description: `Climate: ${detectedClimate}, Soil: ${detectedSoil}`,
+        });
+      }
+    } catch (error: any) {
+      toast.error('Location detection failed', {
+        description: error.message || 'Please enter your location manually',
+      });
+    } finally {
+      setDetectingLocation(false);
+    }
+  };
 
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
@@ -135,8 +185,33 @@ const Onboarding = () => {
         <div className="space-y-6">
           {step === 1 && (
             <div className="space-y-4 animate-fade-in">
+              <div className="flex items-center justify-between mb-4">
+                <Label className="text-lg">What's your soil type?</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDetectLocation}
+                  disabled={detectingLocation}
+                  className="gap-2"
+                >
+                  {detectingLocation ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Detecting...
+                    </>
+                  ) : (
+                    <>
+                      <MapPin className="w-4 h-4" />
+                      Auto-detect
+                    </>
+                  )}
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Use GPS detection for smart recommendations based on your exact location and climate.
+              </p>
               <div>
-                <Label className="text-lg mb-4 block">What's your soil type?</Label>
                 <div className="grid grid-cols-2 gap-3">
                   {soilTypes.map((type) => (
                     <Button
@@ -189,27 +264,75 @@ const Onboarding = () => {
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="latitude">Latitude (optional)</Label>
-                <Input
-                  id="latitude"
-                  type="number"
-                  step="0.000001"
-                  placeholder="e.g., 40.7128"
-                  value={formData.latitude}
-                  onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="longitude">Longitude (optional)</Label>
-                <Input
-                  id="longitude"
-                  type="number"
-                  step="0.000001"
-                  placeholder="e.g., -74.0060"
-                  value={formData.longitude}
-                  onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                />
+              
+              <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold">Location Coordinates</Label>
+                  {!formData.latitude && !formData.longitude && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDetectLocation}
+                      disabled={detectingLocation}
+                      className="gap-2"
+                    >
+                      {detectingLocation ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Detecting...
+                        </>
+                      ) : (
+                        <>
+                          <MapPin className="w-4 h-4" />
+                          Use GPS
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Location helps us provide accurate tree recommendations
+                </p>
+                
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="latitude" className="text-xs">Latitude</Label>
+                    <Input
+                      id="latitude"
+                      type="number"
+                      step="0.000001"
+                      placeholder="e.g., 40.7128"
+                      value={formData.latitude}
+                      onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="longitude" className="text-xs">Longitude</Label>
+                    <Input
+                      id="longitude"
+                      type="number"
+                      step="0.000001"
+                      placeholder="e.g., -74.0060"
+                      value={formData.longitude}
+                      onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                </div>
+                
+                {formData.weatherData && (
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <p className="text-xs font-semibold mb-1">Detected Climate Data:</p>
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <p>📍 {formData.weatherData.location.name}, {formData.weatherData.location.country}</p>
+                      <p>🌡️ Temperature: {formData.weatherData.current.temperature}°C</p>
+                      <p>💧 Humidity: {formData.weatherData.current.humidity}%</p>
+                      <p>🌧️ Est. Annual Rainfall: {formData.weatherData.estimated_annual_rainfall}mm</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -5,7 +5,123 @@ interface UserProfile {
   climate_zone: string | null;
   land_size_hectares: number | null;
   conservation_goals: string[] | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
+
+interface WeatherData {
+  current: {
+    temperature: number;
+    humidity: number;
+  };
+  estimated_annual_rainfall: number;
+}
+
+/**
+ * Enhanced compatibility calculation with location-based factors
+ */
+export const calculateCompatibilityWithWeather = (
+  tree: Tree,
+  profile: UserProfile,
+  weatherData?: WeatherData
+): number => {
+  let score = calculateCompatibility(tree, profile);
+
+  // Bonus points for location-based optimization (up to 15 points)
+  if (weatherData && profile.latitude && profile.longitude) {
+    const tempScore = calculateTemperatureMatch(tree, weatherData.current.temperature);
+    const humidityScore = calculateHumidityMatch(tree, weatherData.current.humidity);
+    const rainfallScore = calculateRainfallMatch(tree, weatherData.estimated_annual_rainfall);
+    
+    const locationBonus = Math.round((tempScore + humidityScore + rainfallScore) / 3);
+    score = Math.min(100, score + locationBonus);
+  }
+
+  return score;
+};
+
+/**
+ * Calculate temperature compatibility
+ */
+const calculateTemperatureMatch = (tree: Tree, temperature: number): number => {
+  // Optimal temperature ranges for different growth rates
+  const tempRanges: Record<string, { min: number; max: number }> = {
+    fast: { min: 15, max: 30 },
+    moderate: { min: 10, max: 25 },
+    slow: { min: 5, max: 20 },
+  };
+
+  const range = tempRanges[tree.growthRate.toLowerCase()] || tempRanges.moderate;
+  
+  if (temperature >= range.min && temperature <= range.max) {
+    return 5; // Perfect temperature
+  } else if (temperature >= range.min - 5 && temperature <= range.max + 5) {
+    return 3; // Acceptable temperature
+  }
+  
+  return 0;
+};
+
+/**
+ * Calculate humidity compatibility
+ */
+const calculateHumidityMatch = (tree: Tree, humidity: number): number => {
+  // Different trees prefer different humidity levels
+  const soilHumidityPreference: Record<string, number> = {
+    peaty: 80, // High humidity
+    clay: 70,
+    loamy: 60,
+    silty: 60,
+    sandy: 40, // Low humidity
+    chalky: 45,
+  };
+
+  const preferredHumidity = tree.requirements.preferredSoils
+    .map(soil => soilHumidityPreference[soil])
+    .reduce((a, b) => (a + b) / 2, 60);
+
+  const diff = Math.abs(humidity - preferredHumidity);
+  
+  if (diff < 10) return 5;
+  if (diff < 20) return 3;
+  if (diff < 30) return 1;
+  
+  return 0;
+};
+
+/**
+ * Calculate rainfall compatibility
+ */
+const calculateRainfallMatch = (tree: Tree, annualRainfall: number): number => {
+  // Rainfall requirements based on climate zones
+  const rainfallRanges: Record<string, { min: number; max: number }> = {
+    tropical: { min: 1500, max: 4000 },
+    subtropical: { min: 1000, max: 2000 },
+    temperate: { min: 600, max: 1500 },
+    mediterranean: { min: 400, max: 900 },
+    cold: { min: 300, max: 800 },
+    arid: { min: 100, max: 400 },
+  };
+
+  const climateZones = tree.requirements.suitableClimates;
+  
+  for (const zone of climateZones) {
+    const range = rainfallRanges[zone];
+    if (range && annualRainfall >= range.min && annualRainfall <= range.max) {
+      return 5; // Perfect rainfall for this climate
+    }
+  }
+
+  // Partial credit if close to any suitable range
+  for (const zone of climateZones) {
+    const range = rainfallRanges[zone];
+    if (range && annualRainfall >= range.min * 0.7 && annualRainfall <= range.max * 1.3) {
+      return 2;
+    }
+  }
+  
+  return 0;
+};
 
 /**
  * Calculate compatibility score between user profile and tree species

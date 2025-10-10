@@ -253,24 +253,24 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   return (
     <div className="flex flex-col items-center space-y-6 animate-fade-in" role="region" aria-label="Tree matching interface">
       {/* Location Detection & View Matches */}
-      <div className="flex gap-3 w-full max-w-sm">
+      <div className="flex gap-2 sm:gap-3 w-full max-w-sm px-4 sm:px-0">
         <Button
           variant="outline"
           onClick={() => navigate("/matches")}
-          className="gap-2 flex-1"
+          className="gap-2 flex-1 h-11 sm:h-10"
           aria-label={`View your ${matchedTreeIds.size} tree matches`}
         >
           <History className="w-4 h-4" aria-hidden="true" />
-          Matches ({matchedTreeIds.size})
+          <span className="text-sm sm:text-base">Matches ({matchedTreeIds.size})</span>
         </Button>
       </div>
 
       {/* GPS Detection */}
-      <LocationDetector onLocationDetected={handleLocationDetected} className="w-full max-w-sm" />
+      <LocationDetector onLocationDetected={handleLocationDetected} className="w-full max-w-sm px-4 sm:px-0" />
 
       {/* Progress indicator */}
-      <div className="w-full max-w-sm">
-        <div className="flex justify-between text-sm text-muted-foreground mb-2">
+      <div className="w-full max-w-sm px-4 sm:px-0">
+        <div className="flex justify-between text-xs sm:text-sm text-muted-foreground mb-2">
           <span>Progress</span>
           <span aria-live="polite">{currentIndex + 1} / {filteredTrees.length}</span>
         </div>
@@ -290,7 +290,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       </div>
 
       {/* Card Stack */}
-      <div className="relative w-full max-w-sm h-[600px]">
+      <div className="relative w-full max-w-sm h-[500px] sm:h-[600px] px-4 sm:px-0">
         {/* Current card */}
         <div
           className={`absolute inset-0 transition-all duration-300 cursor-pointer ${
@@ -324,20 +324,20 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       </div>
 
       {/* Action buttons */}
-      <div className="flex gap-6 items-center" role="group" aria-label="Swipe actions">
+      <div className="flex gap-4 sm:gap-6 items-center px-4 sm:px-0" role="group" aria-label="Swipe actions">
         <Button
           variant="swipe"
           size="icon"
-          className="w-16 h-16 rounded-full"
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full"
           onClick={() => handleSwipe('left')}
           disabled={isAnimating}
           aria-label={`Pass on ${currentTree?.englishName}`}
         >
-          <X className="w-8 h-8 text-destructive" aria-hidden="true" />
+          <X className="w-7 h-7 sm:w-8 sm:h-8 text-destructive" aria-hidden="true" />
         </Button>
         
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground" aria-live="polite">
+        <div className="text-center min-w-[80px] sm:min-w-[100px]">
+          <p className="text-xs sm:text-sm text-muted-foreground" aria-live="polite">
             {matchedTreeIds.size} tree{matchedTreeIds.size !== 1 ? 's' : ''} matched
           </p>
         </div>
@@ -345,17 +345,17 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
         <Button
           variant="swipe"
           size="icon"
-          className="w-16 h-16 rounded-full"
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full"
           onClick={() => handleSwipe('right')}
           disabled={isAnimating}
           aria-label={`Match with ${currentTree?.englishName}`}
         >
-          <Heart className="w-8 h-8 text-secondary" aria-hidden="true" />
+          <Heart className="w-7 h-7 sm:w-8 sm:h-8 text-secondary" aria-hidden="true" />
         </Button>
       </div>
 
       {/* Instructions */}
-      <p className="text-sm text-center text-muted-foreground max-w-sm" role="note">
+      <p className="text-xs sm:text-sm text-center text-muted-foreground max-w-sm px-4" role="note">
         Click card for details • Swipe right to match • Swipe left to pass
       </p>
 

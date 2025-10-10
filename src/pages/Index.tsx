@@ -23,43 +23,43 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Leaf className="w-6 h-6 text-primary" />
-            <span className="font-bold text-lg">EchoPlot</span>
+            <Leaf className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            <span className="font-bold text-base sm:text-lg">EchoPlot</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <LanguageSwitcher />
-            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="hidden sm:flex">
               Dashboard
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/nursery")}>
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Nursery
+            <Button variant="ghost" size="sm" onClick={() => navigate("/nursery")} className="px-2 sm:px-4">
+              <ShoppingCart className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Nursery</span>
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/verifications")}>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/verifications")} className="hidden md:flex">
               Verifications
             </Button>
             {canModerate && (
-              <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="hidden lg:flex">
                 <Shield className="w-4 h-4 mr-2" />
                 Admin
               </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={() => navigate("/profile")}>
-              <User className="w-4 h-4 mr-2" />
-              Profile
+            <Button variant="ghost" size="sm" onClick={() => navigate("/profile")} className="px-2 sm:px-4">
+              <User className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Profile</span>
             </Button>
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+            <Button variant="ghost" size="sm" onClick={handleSignOut} className="px-2 sm:px-4">
+              <LogOut className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Sign Out</span>
             </Button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden pt-16">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${heroForest})` }}
@@ -67,19 +67,19 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-background" />
         </div>
         
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-in">
-          <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-primary/30">
-            <Leaf className="w-4 h-4 text-primary-foreground" />
-            <span className="text-sm text-primary-foreground font-medium">
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-in py-12">
+          <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6 border border-primary/30">
+            <Leaf className="w-3 h-3 sm:w-4 sm:h-4 text-primary-foreground" />
+            <span className="text-xs sm:text-sm text-primary-foreground font-medium">
               Creating Ripples of Impact Through Time
             </span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white mb-4 sm:mb-6">
             Welcome to EchoPlot! 🌳
           </h1>
           
-          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto">
+          <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto">
             EchoPlot transforms tree planting from a simple agricultural activity into a profound act of intergenerational stewardship.
             Every tree you plant creates ripples that echo through generations.
           </p>
@@ -91,17 +91,18 @@ const Index = () => {
               onClick={() => {
                 document.getElementById('swipe-section')?.scrollIntoView({ behavior: 'smooth' });
               }}
+              className="w-full sm:w-auto"
             >
               Start Swiping
             </Button>
-            <div className="flex items-center gap-6 text-white/80">
+            <div className="flex items-center gap-4 sm:gap-6 text-white/80">
               <div className="flex items-center gap-2">
-                <Heart className="w-5 h-5 text-secondary" />
-                <span className="text-sm">10K+ Matches</span>
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
+                <span className="text-xs sm:text-sm">10K+ Matches</span>
               </div>
               <div className="flex items-center gap-2">
-                <Globe className="w-5 h-5 text-secondary" />
-                <span className="text-sm">50+ Countries</span>
+                <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
+                <span className="text-xs sm:text-sm">50+ Countries</span>
               </div>
             </div>
           </div>
@@ -116,13 +117,13 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4">
+      <section className="py-12 sm:py-16 md:py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12">
             How It Works
           </h2>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             <div className="text-center space-y-4 animate-fade-in">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
                 <Leaf className="w-8 h-8 text-primary" />
@@ -157,13 +158,13 @@ const Index = () => {
       </section>
 
       {/* Swipe Section */}
-      <section id="swipe-section" className="py-20 px-4 bg-muted/30">
+      <section id="swipe-section" className="py-12 sm:py-16 md:py-20 px-4 bg-muted/30">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
               Find Your Perfect Match
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
               Each tree has unique benefits and requirements. Swipe through our curated selection 
               and discover the perfect species for your land.
             </p>

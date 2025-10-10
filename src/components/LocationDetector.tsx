@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { MapPin, Loader2, CheckCircle, AlertCircle } from "lucide-react";
-import { requestLocationPermission } from "@/utils/locationService";
+import { Badge } from "@/components/ui/badge";
+import { MapPin, Loader2, CheckCircle, AlertCircle, MapPinned } from "lucide-react";
+import { detectLocation, getLocationAccuracyRating, type LocationData } from "@/utils/locationService";
 import { supabase } from "@/integrations/supabase/client";
 
 interface LocationDetectorProps {
@@ -14,14 +15,17 @@ export const LocationDetector = ({ onLocationDetected, className }: LocationDete
   const [detecting, setDetecting] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  const [locationData, setLocationData] = useState<LocationData | null>(null);
 
   const handleDetectLocation = async () => {
     setDetecting(true);
     setStatus('idle');
     
     try {
-      // Request GPS permission
-      const location = await requestLocationPermission();
+      // Use smart detection with GPS -> IP fallback
+      const location = await detectLocation();
+      
+      const accuracyInfo = getLocationAccuracyRating(location.accuracy, location.source);
       
       // Fetch weather data
       const { data: weatherData, error } = await supabase.functions.invoke('get-weather-data', {
@@ -34,7 +38,13 @@ export const LocationDetector = ({ onLocationDetected, className }: LocationDete
       if (error) throw error;
 
       setStatus('success');
-      setMessage(`Location detected: ${weatherData.location.name}, ${weatherData.location.country}`);
+      setLocationData(location);
+      
+      const sourceLabel = location.source === 'gps' ? 'GPS' : 
+                         location.source === 'ip' ? 'IP address' : 
+                         location.source === 'cached' ? 'cached data' : 'manual entry';
+      
+      setMessage(`Location detected via ${sourceLabel}: ${weatherData.location.name}, ${weatherData.location.country}`);
       
       if (onLocationDetected) {
         onLocationDetected({
@@ -45,7 +55,7 @@ export const LocationDetector = ({ onLocationDetected, className }: LocationDete
       }
     } catch (error: any) {
       setStatus('error');
-      setMessage(error.message || 'Failed to detect location');
+      setMessage(error.message || 'Failed to detect location. Please try manual entry.');
     } finally {
       setDetecting(false);
     }
@@ -81,9 +91,19 @@ export const LocationDetector = ({ onLocationDetected, className }: LocationDete
             ) : (
               <AlertCircle className="w-4 h-4 text-destructive mt-0.5" />
             )}
-            <AlertDescription className="text-sm">
-              {message}
-            </AlertDescription>
+            <div className="flex-1">
+              <AlertDescription className="text-sm">
+                {message}
+              </AlertDescription>
+              {status === 'success' && locationData && (
+                <div className="mt-2 flex items-center gap-2">
+                  <MapPinned className="w-3 h-3" />
+                  <Badge variant="outline" className={getLocationAccuracyRating(locationData.accuracy, locationData.source).color}>
+                    {getLocationAccuracyRating(locationData.accuracy, locationData.source).description}
+                  </Badge>
+                </div>
+              )}
+            </div>
           </div>
         </Alert>
       )}

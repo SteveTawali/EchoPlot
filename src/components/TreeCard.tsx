@@ -1,4 +1,6 @@
 import { Card } from "@/components/ui/card";
+import { SeasonalInsights } from "./SeasonalInsights";
+import type { SeasonalRecommendation, SuccessProbability } from "@/utils/compatibility";
 
 interface TreeCardProps {
   name: string;
@@ -10,6 +12,8 @@ interface TreeCardProps {
   onSwipe?: (direction: 'left' | 'right') => void;
   compatibilityScore?: number;
   description?: string;
+  seasonalData?: SeasonalRecommendation;
+  successData?: SuccessProbability;
 }
 
 export const TreeCard = ({
@@ -21,6 +25,8 @@ export const TreeCard = ({
   growthRate,
   compatibilityScore,
   description,
+  seasonalData,
+  successData,
 }: TreeCardProps) => {
   const getCompatibilityColor = (score: number) => {
     if (score >= 80) return "bg-green-500";
@@ -59,6 +65,15 @@ export const TreeCard = ({
       </div>
       
       <div className="p-6 space-y-4 bg-gradient-card">
+        {/* Seasonal Insights */}
+        {seasonalData && successData && (
+          <SeasonalInsights 
+            seasonal={seasonalData}
+            success={successData}
+            treeName={name}
+          />
+        )}
+        
         {description && (
           <div>
             <p className="text-sm text-muted-foreground">{description}</p>

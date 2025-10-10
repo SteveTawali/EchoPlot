@@ -1,4 +1,5 @@
 import type { Tree } from "@/data/trees";
+import { getCurrentSeason } from "./locationService";
 
 interface UserProfile {
   soil_type: string | null;
@@ -15,6 +16,26 @@ interface WeatherData {
     humidity: number;
   };
   estimated_annual_rainfall: number;
+}
+
+export interface SeasonalRecommendation {
+  canPlantNow: boolean;
+  optimalMonths: string[];
+  currentSeasonRating: 'optimal' | 'acceptable' | 'poor';
+  nextOptimalDate: string;
+  seasonalAdvice: string;
+}
+
+export interface SuccessProbability {
+  probability: number; // 0-100
+  rating: 'very-high' | 'high' | 'moderate' | 'low';
+  factors: {
+    climate: number;
+    soil: number;
+    season: number;
+    weather: number;
+  };
+  riskFactors: string[];
 }
 
 /**
@@ -196,4 +217,133 @@ export const getCompatibilityLabel = (score: number): string => {
   if (score >= 60) return "Good Match";
   if (score >= 50) return "Fair Match";
   return "Poor Match";
+};
+
+/**
+ * Calculate seasonal planting recommendation
+ */
+export const getSeasonalRecommendation = (
+  tree: Tree,
+  profile: UserProfile,
+  weatherData?: WeatherData
+): SeasonalRecommendation => {
+  const latitude = profile.latitude || 0;
+  const { season, optimalPlantingMonths } = getCurrentSeason(latitude);
+  
+  const currentMonth = new Date().getMonth();
+  const canPlantNow = optimalPlantingMonths.includes(currentMonth);
+  
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+  
+  const optimalMonthNames = optimalPlantingMonths.map(m => monthNames[m]);
+  
+  let currentSeasonRating: 'optimal' | 'acceptable' | 'poor' = 'poor';
+  let seasonalAdvice = '';
+  
+  if (canPlantNow) {
+    currentSeasonRating = 'optimal';
+    seasonalAdvice = `Perfect time to plant! ${season} is ideal for establishing ${tree.name}.`;
+  } else {
+    const nextOptimalMonth = optimalPlantingMonths.find(m => m > currentMonth) || optimalPlantingMonths[0];
+    const monthsUntilOptimal = nextOptimalMonth > currentMonth 
+      ? nextOptimalMonth - currentMonth 
+      : (12 - currentMonth) + nextOptimalMonth;
+    
+    if (monthsUntilOptimal <= 2) {
+      currentSeasonRating = 'acceptable';
+      seasonalAdvice = `Wait ${monthsUntilOptimal} month${monthsUntilOptimal > 1 ? 's' : ''} for optimal planting conditions.`;
+    } else {
+      currentSeasonRating = 'poor';
+      seasonalAdvice = `Best to wait for ${optimalMonthNames[0]}. Use this time to prepare the soil.`;
+    }
+  }
+  
+  const nextOptimal = optimalPlantingMonths.find(m => m > currentMonth) || optimalPlantingMonths[0];
+  const nextOptimalDate = `${monthNames[nextOptimal]} 1, ${new Date().getFullYear() + (nextOptimal <= currentMonth ? 1 : 0)}`;
+  
+  return {
+    canPlantNow,
+    optimalMonths: optimalMonthNames,
+    currentSeasonRating,
+    nextOptimalDate,
+    seasonalAdvice,
+  };
+};
+
+/**
+ * Calculate success probability with detailed factors
+ */
+export const calculateSuccessProbability = (
+  tree: Tree,
+  profile: UserProfile,
+  weatherData?: WeatherData
+): SuccessProbability => {
+  const factors = {
+    climate: 0,
+    soil: 0,
+    season: 0,
+    weather: 0,
+  };
+  
+  const riskFactors: string[] = [];
+  
+  // Climate factor (0-100)
+  if (profile.climate_zone && tree.requirements.suitableClimates.includes(profile.climate_zone as any)) {
+    factors.climate = 100;
+  } else if (profile.climate_zone) {
+    factors.climate = 40;
+    riskFactors.push(`${tree.name} prefers ${tree.requirements.suitableClimates.join(', ')} climates`);
+  }
+  
+  // Soil factor (0-100)
+  if (profile.soil_type && tree.requirements.preferredSoils.includes(profile.soil_type as any)) {
+    factors.soil = 100;
+  } else if (profile.soil_type) {
+    factors.soil = 50;
+    riskFactors.push(`Soil type may need amendment for optimal growth`);
+  }
+  
+  // Season factor (0-100)
+  const seasonal = getSeasonalRecommendation(tree, profile, weatherData);
+  if (seasonal.currentSeasonRating === 'optimal') {
+    factors.season = 100;
+  } else if (seasonal.currentSeasonRating === 'acceptable') {
+    factors.season = 70;
+  } else {
+    factors.season = 30;
+    riskFactors.push(`Planting outside optimal season (best: ${seasonal.optimalMonths.join(', ')})`);
+  }
+  
+  // Weather factor (0-100) - if available
+  if (weatherData && profile.latitude) {
+    const tempScore = calculateTemperatureMatch(tree, weatherData.current.temperature) * 20;
+    const humidityScore = calculateHumidityMatch(tree, weatherData.current.humidity) * 20;
+    const rainfallScore = calculateRainfallMatch(tree, weatherData.estimated_annual_rainfall) * 20;
+    factors.weather = tempScore + humidityScore + rainfallScore;
+    
+    if (factors.weather < 60) {
+      riskFactors.push(`Current weather conditions are less than ideal`);
+    }
+  } else {
+    factors.weather = 70; // Default moderate score without weather data
+  }
+  
+  // Calculate overall probability
+  const probability = Math.round(
+    (factors.climate * 0.35 + factors.soil * 0.25 + factors.season * 0.25 + factors.weather * 0.15)
+  );
+  
+  let rating: SuccessProbability['rating'];
+  if (probability >= 85) rating = 'very-high';
+  else if (probability >= 70) rating = 'high';
+  else if (probability >= 50) rating = 'moderate';
+  else rating = 'low';
+  
+  return {
+    probability,
+    rating,
+    factors,
+    riskFactors,
+  };
 };

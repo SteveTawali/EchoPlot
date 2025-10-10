@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, MapPin, Loader2 } from "lucide-react";
-import { requestLocationPermission, determineClimateZone, determineSoilType } from "@/utils/locationService";
+import { requestLocationPermission, determineClimateZone, determineSoilType, detectLocation } from "@/utils/locationService";
 
 type SoilType = "clay" | "sandy" | "loamy" | "silty" | "peaty" | "chalky";
 type ClimateZone = "tropical" | "subtropical" | "temperate" | "cold" | "arid" | "mediterranean";
@@ -63,7 +63,8 @@ const Onboarding = () => {
   const handleDetectLocation = async () => {
     setDetectingLocation(true);
     try {
-      const location = await requestLocationPermission();
+      // Use smart detection with GPS -> IP fallback
+      const location = await detectLocation();
       
       // Get weather data from our edge function
       const { data: weatherData, error } = await supabase.functions.invoke('get-weather-data', {
@@ -94,7 +95,11 @@ const Onboarding = () => {
           soilType: detectedSoil,
         }));
 
-        toast.success(`Location detected: ${weatherData.location.name}, ${weatherData.location.country}`, {
+        const sourceLabel = location.source === 'gps' ? 'GPS' : 
+                           location.source === 'ip' ? 'IP location' : 
+                           'cached data';
+
+        toast.success(`Location detected via ${sourceLabel}: ${weatherData.location.name}, ${weatherData.location.country}`, {
           description: `Climate: ${detectedClimate}, Soil: ${detectedSoil}`,
         });
       }

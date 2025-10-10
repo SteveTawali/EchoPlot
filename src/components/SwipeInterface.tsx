@@ -7,7 +7,13 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { calculateCompatibility } from "@/utils/compatibility";
+import { 
+  calculateCompatibility, 
+  getSeasonalRecommendation, 
+  calculateSuccessProbability,
+  type SeasonalRecommendation,
+  type SuccessProbability
+} from "@/utils/compatibility";
 import type { Tree } from "@/data/trees";
 
 interface SwipeInterfaceProps {
@@ -22,6 +28,8 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [compatibilityScore, setCompatibilityScore] = useState(0);
   const [weatherData, setWeatherData] = useState<any>(null);
+  const [seasonalData, setSeasonalData] = useState<SeasonalRecommendation | null>(null);
+  const [successData, setSuccessData] = useState<SuccessProbability | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -87,6 +95,14 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
         score = calculateCompatibility(currentTree, userProfile);
       }
       setCompatibilityScore(score);
+      
+      // Calculate seasonal recommendation
+      const seasonal = getSeasonalRecommendation(currentTree, userProfile, weatherData);
+      setSeasonalData(seasonal);
+      
+      // Calculate success probability
+      const success = calculateSuccessProbability(currentTree, userProfile, weatherData);
+      setSuccessData(success);
     }
   }, [currentTree, userProfile, weatherData]);
 
@@ -227,7 +243,12 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           role="group"
           aria-label="Current tree card"
         >
-          <TreeCard {...currentTree} compatibilityScore={compatibilityScore} />
+          <TreeCard 
+            {...currentTree} 
+            compatibilityScore={compatibilityScore}
+            seasonalData={seasonalData || undefined}
+            successData={successData || undefined}
+          />
         </div>
 
         {/* Next card preview */}

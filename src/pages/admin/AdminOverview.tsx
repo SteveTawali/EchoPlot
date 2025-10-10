@@ -266,10 +266,18 @@ export default function AdminOverview() {
                       <div className="flex items-start gap-2">
                         <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
                         <div>
-                          <p className="font-medium">{submission.constituency}, {submission.county}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {submission.latitude.toFixed(6)}, {submission.longitude.toFixed(6)}
-                          </p>
+                          {submission.constituency && submission.county ? (
+                            <p className="font-medium">{submission.constituency}, {submission.county}</p>
+                          ) : (
+                            <p className="font-medium text-muted-foreground">Location not provided</p>
+                          )}
+                          {submission.latitude && submission.longitude ? (
+                            <p className="text-xs text-muted-foreground">
+                              {submission.latitude.toFixed(6)}, {submission.longitude.toFixed(6)}
+                            </p>
+                          ) : (
+                            <p className="text-xs text-red-500">⚠️ No GPS data</p>
+                          )}
                         </div>
                       </div>
                       
@@ -289,17 +297,24 @@ export default function AdminOverview() {
 
                   {/* Actions */}
                   <div className="flex flex-col gap-3">
-                    <a
-                      href={`https://www.google.com/maps?q=${submission.latitude},${submission.longitude}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full"
-                    >
-                      <Button variant="outline" className="w-full">
+                    {submission.latitude && submission.longitude ? (
+                      <a
+                        href={`https://www.google.com/maps?q=${submission.latitude},${submission.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full"
+                      >
+                        <Button variant="outline" className="w-full">
+                          <MapPin className="h-4 w-4 mr-2" />
+                          View on Map
+                        </Button>
+                      </a>
+                    ) : (
+                      <Button variant="outline" className="w-full" disabled>
                         <MapPin className="h-4 w-4 mr-2" />
-                        View on Map
+                        No GPS Data
                       </Button>
-                    </a>
+                    )}
 
                     <Button
                       onClick={() => handleApprove(submission)}

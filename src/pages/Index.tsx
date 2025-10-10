@@ -1,7 +1,7 @@
 import { SwipeInterface } from "@/components/SwipeInterface";
 import { KENYAN_TREES } from "@/data/kenya";
 import { Button } from "@/components/ui/button";
-import { Leaf, Heart, Globe, LogOut, Shield } from "lucide-react";
+import { Leaf, Heart, Globe, LogOut, Shield, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -45,6 +45,10 @@ const Index = () => {
                 Admin
               </Button>
             )}
+            <Button variant="ghost" size="sm" onClick={() => navigate("/profile")}>
+              <User className="w-4 h-4 mr-2" />
+              Profile
+            </Button>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out

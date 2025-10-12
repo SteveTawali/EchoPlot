@@ -89,8 +89,18 @@ const Onboarding = () => {
         const detectedClimate = determineClimateZone(location.latitude, weatherData.current.temperature);
         const detectedSoil = determineSoilType(weatherData.current.humidity, weatherData.estimated_annual_rainfall);
         
+        console.log('🌍 Auto-detect results:', {
+          climate: detectedClimate,
+          soil: detectedSoil,
+          weatherData: weatherData.current,
+          rainfall: weatherData.estimated_annual_rainfall
+        });
+        
         setFormData(prev => ({
           ...prev,
+          latitude: location.latitude.toString(),
+          longitude: location.longitude.toString(),
+          weatherData,
           climateZone: detectedClimate as ClimateZone,
           soilType: detectedSoil,
         }));

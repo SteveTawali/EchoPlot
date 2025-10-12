@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, MapPin, Loader2 } from "lucide-react";
 import { KENYAN_COUNTIES, AGRO_ECOLOGICAL_ZONES } from "@/data/kenya";
-import { detectLocation } from "@/utils/locationService";
+import { detectLocation, determineClimateZone, determineSoilType } from "@/utils/locationService";
 import { reverseGeocode, determineAgroZone, formatKenyanPhone, validateKenyanPhone } from "@/utils/kenyaLocation";
 
 type SoilType = "clay" | "sandy" | "loamy" | "silty" | "peaty" | "chalky";
@@ -73,6 +73,13 @@ export default function KenyaOnboarding() {
 
       if (error) throw error;
 
+      const detectedClimate = weatherData?.current
+        ? (determineClimateZone(location.latitude, weatherData.current.temperature) as ClimateZone)
+        : null;
+      const detectedSoil = weatherData?.current
+        ? (determineSoilType(weatherData.current.humidity, weatherData.estimated_annual_rainfall) as SoilType)
+        : null;
+
       setFormData(prev => ({
         ...prev,
         latitude: location.latitude.toString(),
@@ -80,9 +87,13 @@ export default function KenyaOnboarding() {
         county: county || "",
         constituency: constituency || "",
         agroZone,
+        climateZone: detectedClimate ?? prev.climateZone,
+        soilType: detectedSoil ?? prev.soilType,
       }));
 
-      toast.success(`Location detected: ${county || 'Unknown'}, Kenya`);
+      toast.success(`Location detected: ${county || 'Unknown'}, Kenya`, {
+        description: detectedSoil && detectedClimate ? `Climate: ${detectedClimate}, Soil: ${detectedSoil}` : undefined,
+      });
     } catch (error: any) {
       toast.error('Location detection failed', {
         description: error.message || 'Please enter your location manually',

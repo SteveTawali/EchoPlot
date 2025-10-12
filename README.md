@@ -78,8 +78,8 @@ EchoPlot is an AI-powered tree matching platform specifically designed for Kenya
 
 ```bash
 # Clone the repository
-git clone <YOUR_GIT_URL>
-cd plant-match-love
+git clone 
+cd EchoPlot
 
 # Install dependencies
 npm install

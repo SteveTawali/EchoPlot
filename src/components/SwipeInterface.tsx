@@ -15,6 +15,7 @@ import {
   type SeasonalRecommendation,
   type SuccessProbability
 } from "@/utils/kenyaCompatibility";
+import { aiRecommendationEngine } from "@/utils/aiRecommendationEngine";
 import type { KenyanTreeSpecies } from "@/data/kenya";
 import { KenyanTreeCard } from "./KenyanTreeCard";
 import { TreeDetailDialog } from "./TreeDetailDialog";
@@ -34,6 +35,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   const [seasonalData, setSeasonalData] = useState<SeasonalRecommendation | null>(null);
   const [successData, setSuccessData] = useState<SuccessProbability | null>(null);
   const [filteredTrees, setFilteredTrees] = useState<KenyanTreeSpecies[]>(trees);
+  const [aiRecommendations, setAiRecommendations] = useState<any[]>([]);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const hasShownToast = useRef(false);
   const { user } = useAuth();
@@ -46,6 +48,13 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
     fetchProfileAndWeather();
     fetchExistingMatches();
   }, [user]);
+
+  // Generate AI recommendations when profile and weather data are available
+  useEffect(() => {
+    if (userProfile && weatherData && trees.length > 0) {
+      generateAIRecommendations();
+    }
+  }, [userProfile, weatherData, trees]);
 
   const fetchExistingMatches = async () => {
     if (!user) return;
@@ -62,6 +71,41 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       setMatchedTreeIds(matchedIds);
     } catch (error) {
       console.error("Error fetching matches:", error);
+    }
+  };
+
+  const generateAIRecommendations = async () => {
+    if (!user || !userProfile || !weatherData) return;
+
+    try {
+      const recommendations = aiRecommendationEngine.generateRecommendations(
+        user.id,
+        trees,
+        {
+          county: userProfile.county,
+          agroZone: userProfile.agro_zone,
+          conservationGoals: userProfile.conservation_goals || [],
+          landSize: userProfile.land_size_hectares || 1
+        },
+        {
+          temperature: weatherData.current.temperature,
+          humidity: weatherData.current.humidity,
+          rainfall: weatherData.estimated_annual_rainfall
+        }
+      );
+
+      setAiRecommendations(recommendations);
+      
+      // Sort trees by AI recommendations
+      const sortedTrees = recommendations
+        .sort((a, b) => b.prediction.compatibilityScore - a.prediction.compatibilityScore)
+        .map(rec => rec.tree);
+      
+      setFilteredTrees(sortedTrees);
+      
+      toast.success("🤖 AI recommendations generated! Trees are now sorted by compatibility.");
+    } catch (error) {
+      console.error('Error generating AI recommendations:', error);
     }
   };
 
@@ -203,6 +247,17 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           // Only update local state if database insert succeeds
           setMatchedTreeIds(prev => new Set([...prev, currentTree.dbId]));
           
+          // Record user behavior for AI learning
+          aiRecommendationEngine.recordUserBehavior(
+            user.id,
+            currentTree.id,
+            'liked',
+            {
+              county: userProfile.county,
+              agroZone: userProfile.agro_zone
+            }
+          );
+          
           toast.success(`🌳 Matched with ${currentTree.englishName}!`, {
             description: `${compatibilityScore}% compatibility - Great choice!`,
           });
@@ -212,6 +267,17 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
         toast.error("Failed to save match");
       }
     } else {
+      // Record user behavior for AI learning
+      aiRecommendationEngine.recordUserBehavior(
+        user.id,
+        currentTree.id,
+        'disliked',
+        {
+          county: userProfile.county,
+          agroZone: userProfile.agro_zone
+        }
+      );
+      
       toast.info(`Passed on ${currentTree.englishName}`, {
         description: "Keep swiping to find your perfect tree!",
       });

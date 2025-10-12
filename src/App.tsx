@@ -11,6 +11,7 @@ import { AdminProtectedRoute } from "@/components/AdminProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { AppWithAI } from "@/components/AppWithAI";
 import AdminLayout from "@/layouts/AdminLayout";
 
 // Lazy load route components for better performance
@@ -64,8 +65,9 @@ const App = () => (
             <Sonner />
             <OfflineIndicator />
             <BrowserRouter>
-              <Suspense fallback={<LoadingFallback />}>
-                <Routes>
+              <AppWithAI>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Routes>
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/onboarding" element={
                     <ProtectedRoute>
@@ -141,7 +143,8 @@ const App = () => (
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </Suspense>
+                </Suspense>
+              </AppWithAI>
             </BrowserRouter>
           </LanguageProvider>
         </AuthProvider>

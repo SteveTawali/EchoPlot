@@ -51,8 +51,8 @@ export const calculateKenyanCompatibility = (
   if (profile.county && tree.suitableCounties.includes(profile.county)) {
     score += 40;
   } else if (profile.county) {
-    // Check if county is in nearby regions
-    score += 10;
+    // More lenient: give partial credit for nearby regions
+    score += 20;
   }
 
   // Agro-ecological zone compatibility (35 points)
@@ -64,9 +64,9 @@ export const calculateKenyanCompatibility = (
     const userZoneType = profile.agro_zone.slice(0, 2);
     const hasMatchingType = tree.agroZones.some(zone => zone.startsWith(userZoneType));
     if (hasMatchingType) {
-      score += 15;
+      score += 20;
     } else {
-      score += 5;
+      score += 10;
     }
   }
 
@@ -81,6 +81,7 @@ export const calculateKenyanCompatibility = (
   }
 
   const percentage = Math.round((score / maxScore) * 100);
+  console.log(`🌳 ${tree.englishName}: ${percentage}% (county: ${profile.county}, zone: ${profile.agro_zone})`);
   return Math.max(0, Math.min(100, percentage));
 };
 

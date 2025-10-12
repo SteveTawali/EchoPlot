@@ -86,10 +86,12 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       // Sort by compatibility score (highest first)
       treesWithScores.sort((a, b) => b.score - a.score);
       
-      // Filter to only show trees with at least 50% compatibility
+      // Filter to only show trees with at least 45% compatibility (lowered threshold)
       const suitable = treesWithScores
-        .filter(({ score }) => score >= 50)
+        .filter(({ score }) => score >= 45)
         .map(({ tree }) => tree);
+      
+      console.log(`📊 Total trees: ${trees.length}, Suitable: ${suitable.length}, Threshold: 45%`);
       
       if (suitable.length > 0) {
         setFilteredTrees(suitable);

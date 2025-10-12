@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { TreeCard } from "./TreeCard";
 import { LocationDetector } from "./LocationDetector";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   const [successData, setSuccessData] = useState<SuccessProbability | null>(null);
   const [filteredTrees, setFilteredTrees] = useState<KenyanTreeSpecies[]>(trees);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const hasShownToast = useRef(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -92,13 +93,19 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       
       if (suitable.length > 0) {
         setFilteredTrees(suitable);
-        toast.success(`Found ${suitable.length} trees perfect for your location!`, {
-          description: `${data.county}, ${data.agro_zone || 'Agro-zone not set'}`
-        });
+        if (!hasShownToast.current) {
+          toast.success(`Found ${suitable.length} trees perfect for your location!`, {
+            description: `${data.county}, ${data.agro_zone || 'Agro-zone not set'}`
+          });
+          hasShownToast.current = true;
+        }
       } else {
         // If no highly compatible trees, show all but notify user
         setFilteredTrees(trees);
-        toast.info('Showing all trees - update your profile for better matches');
+        if (!hasShownToast.current) {
+          toast.info('Showing all trees - update your profile for better matches');
+          hasShownToast.current = true;
+        }
       }
     }
 

@@ -166,7 +166,12 @@ export default function KenyaOnboarding() {
       if (error) throw error;
 
       toast.success(language === 'sw' ? "Umekamilisha! Hebu tuone miti inayofaa" : "Profile completed! Let's find your perfect trees.");
-      navigate("/");
+      
+      // Small delay to ensure database update propagates
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Force page reload to ensure ProtectedRoute sees updated data
+      window.location.href = "/";
     } catch (error: any) {
       toast.error(error.message || "Failed to save profile");
     } finally {

@@ -16,7 +16,7 @@ self.addEventListener('install', (event) => {
       return cache.addAll(STATIC_ASSETS);
     })
   );
-  self.skipWaiting();
+  globalThis.skipWaiting();
 });
 
 // Activate event - clean up old caches

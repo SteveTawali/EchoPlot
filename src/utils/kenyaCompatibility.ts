@@ -1,4 +1,5 @@
 import type { KenyanTreeSpecies } from "@/data/kenya";
+import { logger } from "@/utils/logger";
 
 interface KenyanUserProfile {
   county: string | null;
@@ -81,7 +82,7 @@ export const calculateKenyanCompatibility = (
   }
 
   const percentage = Math.round((score / maxScore) * 100);
-  console.log(`🌳 ${tree.englishName}: ${percentage}% (county: ${profile.county}, zone: ${profile.agro_zone})`);
+  logger.log(`🌳 ${tree.englishName}: ${percentage}% (county: ${profile.county}, zone: ${profile.agro_zone})`);
   return Math.max(0, Math.min(100, percentage));
 };
 

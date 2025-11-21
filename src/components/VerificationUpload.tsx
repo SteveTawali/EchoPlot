@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { logger } from "@/utils/logger";
 import { Upload, MapPin, Calendar, X } from "lucide-react";
 import { extractGPSData, compressImage, validateImage } from "@/utils/imageUtils";
 import { reverseGeocode } from "@/utils/kenyaLocation";
@@ -109,7 +110,7 @@ export const VerificationUpload = ({
       }
     } catch (error) {
       toast.error("Failed to process image");
-      console.error(error);
+      logger.error(error);
     } finally {
       setProgress(0);
     }
@@ -225,7 +226,7 @@ export const VerificationUpload = ({
       URL.revokeObjectURL(preview);
       if (onSuccess) onSuccess();
     } catch (error: any) {
-      console.error("Upload error:", error);
+      logger.error("Upload error:", error);
       toast.error(error.message || "Failed to upload verification");
     } finally {
       setUploading(false);

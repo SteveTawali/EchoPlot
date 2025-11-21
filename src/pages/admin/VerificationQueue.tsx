@@ -36,6 +36,7 @@ import {
   Map
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { logger } from '@/utils/logger';
 import {
   Table,
   TableBody,
@@ -92,7 +93,7 @@ export default function VerificationQueue() {
       if (error) throw error;
       setVerifications(data || []);
     } catch (error) {
-      console.error('Error fetching verifications:', error);
+      logger.error('Error fetching verifications:', error);
       toast.error('Failed to load verifications');
     } finally {
       setLoading(false);
@@ -140,7 +141,7 @@ export default function VerificationQueue() {
       toast.success('Verification approved');
       fetchVerifications();
     } catch (error) {
-      console.error('Error approving:', error);
+      logger.error('Error approving:', error);
       toast.error('Failed to approve verification');
     }
   };
@@ -169,7 +170,7 @@ export default function VerificationQueue() {
       setRejectionReason('');
       fetchVerifications();
     } catch (error) {
-      console.error('Error rejecting:', error);
+      logger.error('Error rejecting:', error);
       toast.error('Failed to reject verification');
     }
   };
@@ -206,7 +207,7 @@ export default function VerificationQueue() {
       setRejectionReason('');
       fetchVerifications();
     } catch (error) {
-      console.error('Error with bulk action:', error);
+      logger.error('Error with bulk action:', error);
       toast.error('Failed to process bulk action');
     }
   };

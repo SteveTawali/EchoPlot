@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Heart, Star, Trash2, Leaf, Home } from "lucide-react";
 import { toast } from "sonner";
+import { logger } from "@/utils/logger";
 import { KENYAN_TREES } from "@/data/kenya";
 
 interface Match {
@@ -42,7 +43,7 @@ const Matches = () => {
       setMatches(data || []);
     } catch (error: any) {
       toast.error("Failed to load matches");
-      console.error(error);
+      logger.error(error);
     } finally {
       setLoading(false);
     }

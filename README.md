@@ -95,9 +95,11 @@ npm run dev
 ### Environment Variables
 ```env
 VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
 VITE_OPENWEATHER_API_KEY=your_openweather_api_key
 ```
+
+**Note:** Copy `.env.example` to `.env.local` and fill in your values. The application will throw a clear error if required environment variables are missing.
 
 ## Project Structure
 

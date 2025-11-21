@@ -19,6 +19,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { logger } from '@/utils/logger';
 import {
   Dialog,
   DialogContent,
@@ -88,7 +89,7 @@ export default function AdminDashboard() {
       
       setVerifications(data || []);
     } catch (error) {
-      console.error('Error fetching verifications:', error);
+      logger.error('Error fetching verifications:', error);
       toast.error('Failed to load verifications');
     } finally {
       setLoading(false);
@@ -105,7 +106,7 @@ export default function AdminDashboard() {
         setStats(data[0]);
       }
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      logger.error('Error fetching stats:', error);
     }
   };
 
@@ -126,7 +127,7 @@ export default function AdminDashboard() {
       fetchVerifications();
       fetchStats();
     } catch (error) {
-      console.error('Error approving verification:', error);
+      logger.error('Error approving verification:', error);
       toast.error('Failed to approve verification');
     }
   };
@@ -157,7 +158,7 @@ export default function AdminDashboard() {
       fetchVerifications();
       fetchStats();
     } catch (error) {
-      console.error('Error rejecting verification:', error);
+      logger.error('Error rejecting verification:', error);
       toast.error('Failed to reject verification');
     }
   };

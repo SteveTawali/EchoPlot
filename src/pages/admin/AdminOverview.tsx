@@ -12,6 +12,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { logger } from '@/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -73,7 +74,7 @@ export default function AdminOverview() {
       const pending = (queueData || []).filter((item: any) => item.status === 'pending');
       setPendingSubmissions(pending);
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      logger.error('Error fetching dashboard data:', error);
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
@@ -104,7 +105,7 @@ export default function AdminOverview() {
 
       fetchDashboardData();
     } catch (error) {
-      console.error('Error approving submission:', error);
+      logger.error('Error approving submission:', error);
       toast.error('Failed to approve submission');
     } finally {
       setProcessing(false);
@@ -143,7 +144,7 @@ export default function AdminOverview() {
       setSelectedSubmission(null);
       fetchDashboardData();
     } catch (error) {
-      console.error('Error rejecting submission:', error);
+      logger.error('Error rejecting submission:', error);
       toast.error('Failed to reject submission');
     } finally {
       setProcessing(false);

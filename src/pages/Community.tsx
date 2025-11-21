@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Users, TreePine, Leaf, Home } from "lucide-react";
 import { toast } from "sonner";
+import { logger } from "@/utils/logger";
 
 interface LeaderboardEntry {
   user_id: string;
@@ -48,7 +49,7 @@ const Community = () => {
       setLeaderboard(leaderboardData || []);
       setStats(statsData?.[0] || null);
     } catch (error) {
-      console.error('Error fetching community data:', error);
+      logger.error('Error fetching community data:', error);
       toast.error('Failed to load community data');
     } finally {
       setLoading(false);

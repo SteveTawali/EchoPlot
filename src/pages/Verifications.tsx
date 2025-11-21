@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { VerificationUpload } from "@/components/VerificationUpload";
 import { ArrowLeft, CheckCircle, Clock, XCircle, Leaf, Upload, Home } from "lucide-react";
 import { toast } from "sonner";
+import { logger } from "@/utils/logger";
 
 interface Verification {
   id: string;
@@ -54,7 +55,7 @@ const Verifications = () => {
       setVerifications(data || []);
     } catch (error: any) {
       toast.error("Failed to load verifications");
-      console.error(error);
+      logger.error(error);
     } finally {
       setLoading(false);
     }

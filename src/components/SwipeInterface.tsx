@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
 import { 
   calculateKenyanCompatibility,
   calculateKenyanCompatibilityWithWeather,
@@ -70,7 +71,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       const matchedIds = new Set(data?.map(m => m.tree_id) || []);
       setMatchedTreeIds(matchedIds);
     } catch (error) {
-      console.error("Error fetching matches:", error);
+      logger.error("Error fetching matches:", error);
     }
   };
 
@@ -105,7 +106,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       
       toast.success("🤖 AI recommendations generated! Trees are now sorted by compatibility.");
     } catch (error) {
-      console.error('Error generating AI recommendations:', error);
+      logger.error('Error generating AI recommendations:', error);
     }
   };
 
@@ -135,7 +136,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
         .filter(({ score }) => score >= 45)
         .map(({ tree }) => tree);
       
-      console.log(`📊 Total trees: ${trees.length}, Suitable: ${suitable.length}, Threshold: 45%`);
+      logger.log(`📊 Total trees: ${trees.length}, Suitable: ${suitable.length}, Threshold: 45%`);
       
       if (suitable.length > 0) {
         setFilteredTrees(suitable);
@@ -263,7 +264,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           });
         }
       } catch (error: any) {
-        console.error("Error saving match:", error);
+        logger.error("Error saving match:", error);
         toast.error("Failed to save match");
       }
     } else {

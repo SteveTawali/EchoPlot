@@ -1,4 +1,5 @@
 import exifr from 'exifr';
+import { logger } from '@/utils/logger';
 
 export interface ImageMetadata {
   file: File;
@@ -28,7 +29,7 @@ export const extractGPSData = async (file: File): Promise<{ latitude?: number; l
       timestamp: exifData.DateTimeOriginal || exifData.CreateDate
     };
   } catch (error) {
-    console.error('Error extracting EXIF data:', error);
+    logger.error('Error extracting EXIF data:', error);
     return {};
   }
 };

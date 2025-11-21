@@ -2,6 +2,7 @@ import { useEffect, useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Leaf, MapPin, TrendingUp, Calendar, TreeDeciduous } from "lucide-react";
@@ -84,7 +85,7 @@ const Dashboard = () => {
 
       setLocations(locationsWithCoords as PlantingLocation[]);
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
+      logger.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
     }

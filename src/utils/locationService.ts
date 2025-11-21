@@ -1,3 +1,5 @@
+import { logger } from "@/utils/logger";
+
 export interface LocationData {
   latitude: number;
   longitude: number;
@@ -51,7 +53,7 @@ export const cacheLocation = (location: LocationData, weatherData?: any): void =
     };
     localStorage.setItem(LOCATION_CACHE_KEY, JSON.stringify(cacheData));
   } catch (error) {
-    console.error('Failed to cache location:', error);
+    logger.error('Failed to cache location:', error);
   }
 };
 
@@ -131,16 +133,16 @@ export const detectLocation = async (): Promise<LocationData> => {
   // 1. Try cached location first
   const cached = getCachedLocation();
   if (cached) {
-    console.log('Using cached location');
+    logger.log('Using cached location');
     return cached;
   }
   
   // 2. Try GPS
   try {
-    console.log('Attempting GPS location...');
+    logger.log('Attempting GPS location...');
     return await requestLocationPermission();
   } catch (gpsError) {
-    console.log('GPS failed, falling back to IP location');
+    logger.log('GPS failed, falling back to IP location');
     
     // 3. Fallback to IP-based location
     try {

@@ -11,6 +11,7 @@ import {
   TreePine
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { logger } from '@/utils/logger';
 
 export default function AdminAnalytics() {
   const [loading, setLoading] = useState(true);
@@ -56,7 +57,7 @@ export default function AdminAnalytics() {
 
       setCountyData(countyArray);
     } catch (error) {
-      console.error('Error fetching analytics:', error);
+      logger.error('Error fetching analytics:', error);
       toast.error('Failed to load analytics');
     } finally {
       setLoading(false);

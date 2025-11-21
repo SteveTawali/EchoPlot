@@ -1,4 +1,5 @@
 import { KENYAN_COUNTIES } from '@/data/kenya';
+import { logger } from '@/utils/logger';
 
 // Kenya county boundaries (simplified - in production, use proper GeoJSON)
 const COUNTY_BOUNDARIES: Record<string, { lat: [number, number]; lng: [number, number] }> = {
@@ -47,7 +48,7 @@ export const reverseGeocode = async (
     
     return { county, constituency };
   } catch (error) {
-    console.error('Reverse geocoding error:', error);
+    logger.error('Reverse geocoding error:', error);
     return {
       county: detectKenyanCounty(latitude, longitude),
       constituency: null

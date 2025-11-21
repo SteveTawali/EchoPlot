@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logger } from '@/utils/logger';
 
 export const useOnlineStatus = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -9,7 +10,7 @@ export const useOnlineStatus = () => {
       setIsOnline(true);
       if (wasOffline) {
         // Show reconnection message
-        console.log('Back online');
+        logger.log('Back online');
       }
       setWasOffline(false);
     };

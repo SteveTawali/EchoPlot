@@ -7,6 +7,7 @@ import { Camera, Upload, CheckCircle, AlertCircle, Brain, Leaf } from "lucide-re
 import { toast } from "sonner";
 import { aiTreeRecognition } from "@/utils/aiImageRecognition";
 import { useLanguage } from "@/hooks/useLanguage";
+import { logger } from "@/utils/logger";
 
 interface AIVerificationUploadProps {
   onVerificationComplete: (result: any) => void;
@@ -135,7 +136,7 @@ export const AIVerificationUpload = ({
       }
 
     } catch (error) {
-      console.error('AI analysis failed:', error);
+      logger.error('AI analysis failed:', error);
       toast.error(
         language === 'en'
           ? 'Failed to analyze image. Please try again.'

@@ -1,4 +1,5 @@
 import type { KenyanTreeSpecies } from "@/data/kenya";
+import { logger } from "@/utils/logger";
 
 interface TreeRecognitionResult {
   species: {
@@ -77,7 +78,7 @@ export class AITreeRecognition {
         locationValidation
       };
     } catch (error) {
-      console.error('AI tree recognition failed:', error);
+      logger.error('AI tree recognition failed:', error);
       throw new Error('Failed to analyze tree photo');
     }
   }

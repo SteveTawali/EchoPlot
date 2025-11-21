@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/utils/logger";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,7 +90,7 @@ const Onboarding = () => {
         const detectedClimate = determineClimateZone(location.latitude, weatherData.current.temperature);
         const detectedSoil = determineSoilType(weatherData.current.humidity, weatherData.estimated_annual_rainfall);
         
-        console.log('🌍 Auto-detect results:', {
+        logger.log('🌍 Auto-detect results:', {
           climate: detectedClimate,
           soil: detectedSoil,
           weatherData: weatherData.current,

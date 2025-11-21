@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { logger } from '@/utils/logger';
 
 type UserRole = 'admin' | 'moderator' | 'user';
 
@@ -27,7 +28,7 @@ export const useAdminAuth = () => {
 
         // No error if there's no row - user just has no role
         if (error) {
-          console.error('Error fetching user role:', error);
+          logger.error('Error fetching user role:', error);
           setRole('user');
         } else if (data) {
           setRole(data.role as UserRole);
@@ -37,7 +38,7 @@ export const useAdminAuth = () => {
           setRole('user');
         }
       } catch (error) {
-        console.error('Error:', error);
+        logger.error('Error:', error);
         setRole('user');
       } finally {
         setLoading(false);

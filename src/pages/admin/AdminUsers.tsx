@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/dialog';
 import { Search, Shield, UserCog, Mail, Phone, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
+import { logger } from '@/utils/logger';
 
 interface UserProfile {
   user_id: string;
@@ -71,7 +72,7 @@ export default function AdminUsers() {
       if (error) throw error;
       setUsers(data || []);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      logger.error('Error fetching users:', error);
       toast.error('Failed to load users');
     } finally {
       setLoading(false);
@@ -110,7 +111,7 @@ export default function AdminUsers() {
       setShowRoleDialog(false);
       setSelectedUser(null);
     } catch (error) {
-      console.error('Error assigning role:', error);
+      logger.error('Error assigning role:', error);
       toast.error('Failed to assign role');
     }
   };

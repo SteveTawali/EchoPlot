@@ -25,6 +25,21 @@ class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     logger.error("Uncaught error:", error, errorInfo);
+    
+    // Also send to Sentry if available
+    if (!import.meta.env.DEV) {
+      import('@sentry/react').then((Sentry) => {
+        Sentry.captureException(error, {
+          contexts: {
+            react: {
+              componentStack: errorInfo.componentStack,
+            },
+          },
+        });
+      }).catch(() => {
+        // Sentry not available, ignore
+      });
+    }
   }
 
   private handleReset = () => {

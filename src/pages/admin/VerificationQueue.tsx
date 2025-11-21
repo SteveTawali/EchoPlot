@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/utils/logger';
+import { sanitizeString, notesSchema } from '@/utils/validation';
 import {
   Table,
   TableBody,
@@ -152,6 +153,13 @@ export default function VerificationQueue() {
       return;
     }
 
+    // Validate and sanitize rejection reason
+    const validation = notesSchema.safeParse(rejectionReason);
+    if (!validation.success) {
+      toast.error('Rejection reason is too long (max 1000 characters)');
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('planting_verifications')
@@ -159,7 +167,7 @@ export default function VerificationQueue() {
           status: 'rejected',
           verified_at: new Date().toISOString(),
           verified_by: (await supabase.auth.getUser()).data.user?.id,
-          rejection_reason: rejectionReason
+          rejection_reason: sanitizeString(rejectionReason)
         })
         .eq('id', selectedVerification.id);
 
@@ -188,11 +196,20 @@ export default function VerificationQueue() {
 
     try {
       const user = (await supabase.auth.getUser()).data.user;
+      // Validate rejection reason if rejecting
+      if (bulkAction === 'reject') {
+        const validation = notesSchema.safeParse(rejectionReason);
+        if (!validation.success) {
+          toast.error('Rejection reason is too long (max 1000 characters)');
+          return;
+        }
+      }
+
       const updates = {
         status: (bulkAction === 'approve' ? 'verified' : 'rejected') as 'verified' | 'rejected',
         verified_at: new Date().toISOString(),
         verified_by: user?.id,
-        ...(bulkAction === 'reject' && { rejection_reason: rejectionReason })
+        ...(bulkAction === 'reject' && { rejection_reason: sanitizeString(rejectionReason) })
       };
 
       const { error } = await supabase

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Leaf } from "lucide-react";
+import { signInSchema, signUpSchema, validateInput } from "@/utils/validation";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -23,6 +24,15 @@ const Auth = () => {
 
     try {
       if (isLogin) {
+        // Validate sign in input
+        const validation = validateInput(signInSchema, { email, password });
+        if (!validation.success) {
+          const firstError = validation.errors?.errors[0];
+          toast.error(firstError?.message || "Invalid input");
+          setLoading(false);
+          return;
+        }
+
         const { error } = await signIn(email, password);
         if (error) {
           toast.error(error.message || "Failed to sign in");
@@ -31,8 +41,11 @@ const Auth = () => {
           navigate("/");
         }
       } else {
-        if (!fullName.trim()) {
-          toast.error("Please enter your full name");
+        // Validate sign up input
+        const validation = validateInput(signUpSchema, { email, password, fullName });
+        if (!validation.success) {
+          const firstError = validation.errors?.errors[0];
+          toast.error(firstError?.message || "Invalid input");
           setLoading(false);
           return;
         }
@@ -110,6 +123,11 @@ const Auth = () => {
               disabled={loading}
               minLength={6}
             />
+            {!isLogin && (
+              <p className="text-xs text-muted-foreground">
+                Must be at least 6 characters with uppercase, lowercase, and number
+              </p>
+            )}
           </div>
 
           <Button

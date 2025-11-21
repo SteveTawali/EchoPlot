@@ -39,29 +39,28 @@ EchoPlot is an AI-powered tree matching platform specifically designed for Kenya
 - **Accessibility**: WCAG 2.1 Level AA compliant with screen reader support
 - **Performance**: Optimized for mobile networks and low-end devices
 
-### 🔐 AI-Enhanced Verification System
-- **AI Image Recognition**: Automatically identifies tree species from photos with 85%+ accuracy
-- **Health Assessment**: AI analyzes tree health and detects diseases/pests
-- **Growth Stage Detection**: Determines if tree is seedling, sapling, or mature
-- **Planting Validation**: Verifies proper planting location and environment
+### 🔐 Verification System
+- **Image Analysis**: Basic image processing for verification photos (color analysis, quality assessment)
+- **GPS Extraction**: Automatically extracts location data from photo metadata
+- **Manual Verification**: County moderators review and approve/reject submissions
 - **County-Based Moderation**: KFS officers assigned to specific counties
-- **M-Pesa Integration**: Reward payments upon successful verification
 - **Analytics Dashboard**: County-level performance tracking
+- **Note**: AI image recognition is implemented as a proof-of-concept with simulated analysis. For production, integrate with a real ML service (e.g., TensorFlow.js, Google Cloud Vision, or custom trained model).
 
-### 💬 AI Chatbot Assistant
-- **24/7 Support**: Bilingual AI assistant for tree care advice
-- **Contextual Help**: Provides location and season-specific guidance
-- **Troubleshooting**: Diagnoses tree problems and suggests solutions
-- **Planting Advice**: Step-by-step guidance for optimal tree planting
+### 💬 Help & Support
+- **Bilingual Interface**: Full English and Kiswahili support throughout the app
+- **Tree Information**: Comprehensive species data and planting guidance
+- **Location-Specific Advice**: Recommendations based on county and agro-ecological zone
+- **Note**: AI chatbot assistant is planned for future implementation
 
 ## Technology Stack
 
 - **Frontend**: React 18 + TypeScript + Vite
 - **UI Framework**: shadcn/ui + Tailwind CSS
 - **Backend**: Supabase (PostgreSQL + Auth + Storage)
-- **AI/ML**: Custom machine learning algorithms for recommendations
-- **Computer Vision**: AI-powered image recognition and analysis
-- **Natural Language Processing**: AI chatbot with contextual understanding
+- **AI/ML**: Custom algorithms for tree recommendations (rule-based matching)
+- **Image Analysis**: Basic image processing for verification (proof-of-concept AI recognition available)
+- **Note**: Advanced AI features (ML models, computer vision, NLP chatbot) are planned for future implementation
 - **Maps**: Leaflet + React-Leaflet
 - **PWA**: Vite PWA Plugin + Service Workers
 - **State Management**: TanStack Query + React Hook Form
@@ -97,6 +96,7 @@ npm run dev
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
 VITE_OPENWEATHER_API_KEY=your_openweather_api_key
+VITE_SENTRY_DSN=your_sentry_dsn  # Optional: for error tracking in production
 ```
 
 **Note:** Copy `.env.example` to `.env.local` and fill in your values. The application will throw a clear error if required environment variables are missing.
@@ -143,11 +143,12 @@ Enhanced with AI-powered scoring:
 - **User Similarity (15%)**: Recommendations from users with similar profiles
 - **Environmental Factors (5%)**: Real-time weather and seasonal conditions
 
-### AI Image Recognition System
-- **Species Identification**: Computer vision identifies tree species from photos
-- **Health Assessment**: Detects diseases, pests, and health issues
-- **Growth Stage Analysis**: Determines tree maturity and development stage
-- **Environment Validation**: Verifies proper planting location and conditions
+### Image Analysis System (Proof-of-Concept)
+- **Basic Image Processing**: Extracts colors, analyzes brightness, assesses image quality
+- **Species Matching**: Simulated species identification based on visual features (proof-of-concept)
+- **Health Assessment**: Basic health indicators from image analysis (simulated)
+- **Growth Stage Detection**: Structure-based growth stage estimation (simulated)
+- **Note**: Current implementation uses basic image analysis and simulated pattern detection. For production, integrate with a real ML model or computer vision API.
 
 ### AI Chatbot Assistant
 - **Natural Language Processing**: Understands user queries in English and Kiswahili
@@ -199,6 +200,23 @@ We welcome contributions to EchoPlot! Here's how you can help:
 - Ensure accessibility compliance (WCAG 2.1 Level AA)
 - Test on mobile devices and slow networks
 - Maintain bilingual support (English/Kiswahili)
+- Write tests for new features
+- Run tests before committing: `npm test`
+
+### Testing
+```bash
+# Run tests in watch mode
+npm test
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests once
+npm run test:run
+
+# Run tests with coverage
+npm run test:coverage
+```
 
 ## License
 

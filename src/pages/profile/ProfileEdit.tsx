@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { KENYAN_COUNTIES } from '@/data/kenya';
+import { profileEditSchema, validateInput, sanitizeString } from '@/utils/validation';
 
 const ProfileEdit = () => {
   const { user } = useAuth();
@@ -56,14 +57,36 @@ const ProfileEdit = () => {
 
     setLoading(true);
 
+    // Validate input
+    const validation = validateInput(profileEditSchema, {
+      full_name: formData.full_name,
+      phone: formData.phone || undefined,
+      county: formData.county || undefined,
+      constituency: formData.constituency || undefined,
+    });
+
+    if (!validation.success) {
+      const firstError = validation.errors?.errors[0];
+      toast({
+        title: language === 'en' ? 'Validation Error' : 'Hitilafu ya Uthibitishaji',
+        description: firstError?.message || (language === 'en' ? 'Please check your input' : 'Tafadhali angalia maingizo yako'),
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Sanitize inputs
+    const sanitizedData = {
+      full_name: sanitizeString(formData.full_name),
+      phone: validation.data?.phone || formData.phone || null,
+      county: formData.county || null,
+      constituency: formData.constituency ? sanitizeString(formData.constituency) : null,
+    };
+
     const { error } = await supabase
       .from('profiles')
-      .update({
-        full_name: formData.full_name,
-        phone: formData.phone,
-        county: formData.county,
-        constituency: formData.constituency,
-      })
+      .update(sanitizedData)
       .eq('user_id', user.id);
 
     if (error) {

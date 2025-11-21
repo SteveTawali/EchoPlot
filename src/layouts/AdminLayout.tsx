@@ -57,7 +57,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   if (!canModerate) return null;
 
   const navItems = [
-    { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+    { path: '/admin', icon: LayoutDashboard, label: 'Overview', exact: true },
+    { path: '/admin/verifications', icon: ClipboardCheck, label: 'Verifications', exact: false },
+    { path: '/admin/users', icon: Users, label: 'Users', exact: false },
+    { path: '/admin/analytics', icon: BarChart3, label: 'Analytics', exact: false },
   ];
 
   const isActive = (path: string, exact?: boolean) => {

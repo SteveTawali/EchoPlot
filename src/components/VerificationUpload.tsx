@@ -12,6 +12,7 @@ import { logger } from "@/utils/logger";
 import { Upload, MapPin, Calendar, X } from "lucide-react";
 import { extractGPSData, compressImage, validateImage } from "@/utils/imageUtils";
 import { reverseGeocode } from "@/utils/kenyaLocation";
+import { verificationSchema, validateInput, sanitizeString, latitudeSchema, longitudeSchema } from "@/utils/validation";
 
 interface VerificationUploadProps {
   matchId?: string;
@@ -153,17 +154,39 @@ export const VerificationUpload = ({
 
     // If manual location is being used
     if (manualLocation && manualLat && manualLng) {
-      finalLat = parseFloat(manualLat);
-      finalLng = parseFloat(manualLng);
+      const latNum = parseFloat(manualLat);
+      const lngNum = parseFloat(manualLng);
       
-      if (isNaN(finalLat) || isNaN(finalLng)) {
-        toast.error("Invalid coordinates. Please check your input.");
+      // Validate coordinates
+      const latValidation = latitudeSchema.safeParse(latNum);
+      const lngValidation = longitudeSchema.safeParse(lngNum);
+      
+      if (!latValidation.success || !lngValidation.success) {
+        toast.error("Invalid coordinates. Latitude must be -90 to 90, Longitude must be -180 to 180.");
         return;
       }
+      
+      finalLat = latNum;
+      finalLng = lngNum;
     }
 
     if (!finalLat || !finalLng) {
       toast.error("Location required. Please enable GPS or enter manually.");
+      return;
+    }
+    
+    // Validate verification data
+    const validation = validateInput(verificationSchema, {
+      tree_name: treeName,
+      latitude: finalLat,
+      longitude: finalLng,
+      planting_date: plantingDate || new Date().toISOString().split('T')[0],
+      notes: notes || undefined,
+    });
+    
+    if (!validation.success) {
+      const firstError = validation.errors?.errors[0];
+      toast.error(firstError?.message || "Invalid input data");
       return;
     }
 
@@ -197,22 +220,22 @@ export const VerificationUpload = ({
         .eq("user_id", user.id)
         .maybeSingle();
 
-      // Create verification record
+      // Create verification record (with sanitized data)
       setProgress(80);
       const { error: insertError } = await supabase
         .from("planting_verifications")
         .insert({
           user_id: user.id,
           tree_match_id: matchId || null,
-          tree_name: treeName,
+          tree_name: sanitizeString(treeName),
           image_url: urlData.publicUrl,
           latitude: finalLat,
           longitude: finalLng,
-          county: profile?.county,
-          constituency: profile?.constituency,
-          phone: profile?.phone,
-          planting_date: plantingDate,
-          notes: notes || null,
+          county: profile?.county ? sanitizeString(profile.county) : null,
+          constituency: profile?.constituency ? sanitizeString(profile.constituency) : null,
+          phone: profile?.phone || null,
+          planting_date: plantingDate || new Date().toISOString().split('T')[0],
+          notes: notes ? sanitizeString(notes) : null,
         });
 
       if (insertError) throw insertError;

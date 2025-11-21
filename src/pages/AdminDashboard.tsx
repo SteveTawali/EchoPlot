@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/utils/logger';
+import { sanitizeString, notesSchema } from '@/utils/validation';
 import {
   Dialog,
   DialogContent,
@@ -138,6 +139,13 @@ export default function AdminDashboard() {
       return;
     }
 
+    // Validate and sanitize rejection reason
+    const validation = notesSchema.safeParse(rejectionReason);
+    if (!validation.success) {
+      toast.error('Rejection reason is too long (max 1000 characters)');
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('planting_verifications')
@@ -145,7 +153,7 @@ export default function AdminDashboard() {
           status: 'rejected',
           verified_at: new Date().toISOString(),
           verified_by: (await supabase.auth.getUser()).data.user?.id,
-          rejection_reason: rejectionReason
+          rejection_reason: sanitizeString(rejectionReason)
         })
         .eq('id', selectedVerification.id);
 

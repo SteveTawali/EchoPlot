@@ -31,6 +31,7 @@ import {
 import { Search, Shield, UserCog, Mail, Phone, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/utils/logger';
+import { countySchema, sanitizeString } from '@/utils/validation';
 
 interface UserProfile {
   user_id: string;
@@ -97,13 +98,22 @@ export default function AdminUsers() {
   const handleAssignRole = async () => {
     if (!selectedUser) return;
 
+    // Validate county if assigning moderator role
+    if (selectedRole === 'moderator' && selectedCounty) {
+      const validation = countySchema.safeParse(selectedCounty);
+      if (!validation.success) {
+        toast.error('Please enter a valid county');
+        return;
+      }
+    }
+
     try {
       const { error } = await supabase
         .from('user_roles')
         .upsert({
           user_id: selectedUser.user_id,
           role: selectedRole,
-          county: selectedRole === 'moderator' ? selectedCounty : null
+          county: selectedRole === 'moderator' ? (selectedCounty ? sanitizeString(selectedCounty) : null) : null
         });
 
       if (error) throw error;

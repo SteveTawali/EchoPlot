@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,9 +10,11 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, MapPin, Loader2 } from "lucide-react";
-import { KENYAN_COUNTIES, AGRO_ECOLOGICAL_ZONES } from "@/data/kenya";
+import { KENYAN_COUNTIES } from "@/data/kenya";
 import { detectLocation, determineClimateZone, determineSoilType } from "@/utils/locationService";
-import { reverseGeocode, determineAgroZone, formatKenyanPhone, validateKenyanPhone } from "@/utils/kenyaLocation";
+import { reverseGeocode, determineAgroZone } from "@/utils/kenyaLocation";
+import { onboardingSchema, validateInput, sanitizeString } from "@/utils/validation";
+import { logger } from "@/utils/logger";
 
 type SoilType = "clay" | "sandy" | "loamy" | "silty" | "peaty" | "chalky";
 type ClimateZone = "tropical" | "temperate" | "cold" | "mediterranean";
@@ -41,8 +42,7 @@ export default function KenyaOnboarding() {
   const [loading, setLoading] = useState(false);
   const [detectingLocation, setDetectingLocation] = useState(false);
   const { user } = useAuth();
-  const { t, language } = useLanguage();
-  const navigate = useNavigate();
+  const { language } = useLanguage();
 
   const [formData, setFormData] = useState({
     soilType: null as SoilType | null,
@@ -59,44 +59,116 @@ export default function KenyaOnboarding() {
 
   const handleDetectLocation = async () => {
     setDetectingLocation(true);
+    let detectedCounty = "";
+    let detectedConstituency = "";
+    let detectedAgroZone = "";
+    let detectedClimate: ClimateZone | null = null;
+    let detectedSoil: SoilType | null = null;
+    
     try {
+      // Step 1: Get GPS location (CRITICAL - must work)
+      logger.log('Starting location detection...');
       const location = await detectLocation();
+      logger.log('GPS location obtained:', { lat: location.latitude, lng: location.longitude });
       
-      // Get Kenya-specific location data
-      const { county, constituency } = await reverseGeocode(location.latitude, location.longitude);
-      const agroZone = determineAgroZone(location.latitude, location.longitude);
+      // Step 2: Determine agro-zone from coordinates (CRITICAL - always works)
+      detectedAgroZone = determineAgroZone(location.latitude, location.longitude);
+      logger.log('Agro-zone determined:', detectedAgroZone);
+      
+      // Step 3: Get county via reverse geocoding (IMPORTANT - try but don't fail)
+      try {
+        logger.log('Attempting reverse geocoding...');
+        const geocodeResult = await reverseGeocode(location.latitude, location.longitude);
+        detectedCounty = geocodeResult.county || "";
+        detectedConstituency = geocodeResult.constituency || "";
+        logger.log('Reverse geocoding successful:', { county: detectedCounty, constituency: detectedConstituency });
+      } catch (geocodeError: unknown) {
+        logger.error('Reverse geocoding failed:', geocodeError);
+        // Continue - user can select county manually
+      }
 
-      // Get weather data
-      const { data: weatherData, error } = await supabase.functions.invoke('get-weather-data', {
-        body: { latitude: location.latitude, longitude: location.longitude }
-      });
+      // Step 4: Get weather data for climate/soil detection (OPTIONAL - nice to have)
+      try {
+        logger.log('Fetching weather data...');
+        const { data, error } = await supabase.functions.invoke('get-weather-data', {
+          body: { latitude: location.latitude, longitude: location.longitude }
+        });
+        
+        if (error) {
+          logger.error('Weather API returned error:', error);
+          throw error;
+        }
+        
+        if (data?.current) {
+          logger.log('Weather data received successfully');
+          
+          // Determine climate and soil from weather data
+          detectedClimate = determineClimateZone(location.latitude, data.current.temperature) as ClimateZone;
+          detectedSoil = determineSoilType(data.current.humidity, data.estimated_annual_rainfall) as SoilType;
+          logger.log('Climate and soil determined:', { climate: detectedClimate, soil: detectedSoil });
+        }
+      } catch (weatherError: unknown) {
+        logger.error('Weather data fetch failed:', weatherError);
+        // Weather is optional - continue without it
+        // We'll use default climate zone based on latitude
+        if (!detectedClimate) {
+          detectedClimate = determineClimateZone(location.latitude, 20) as ClimateZone; // Default temp
+        }
+      }
 
-      if (error) throw error;
-
-      const detectedClimate = weatherData?.current
-        ? (determineClimateZone(location.latitude, weatherData.current.temperature) as ClimateZone)
-        : null;
-      const detectedSoil = weatherData?.current
-        ? (determineSoilType(weatherData.current.humidity, weatherData.estimated_annual_rainfall) as SoilType)
-        : null;
-
+      // Step 5: Update form with all detected data
       setFormData(prev => ({
         ...prev,
         latitude: location.latitude.toString(),
         longitude: location.longitude.toString(),
-        county: county || "",
-        constituency: constituency || "",
-        agroZone,
-        climateZone: detectedClimate ?? prev.climateZone,
-        soilType: detectedSoil ?? prev.soilType,
+        county: detectedCounty || prev.county,
+        constituency: detectedConstituency || prev.constituency,
+        agroZone: detectedAgroZone || prev.agroZone,
+        climateZone: detectedClimate || prev.climateZone,
+        soilType: detectedSoil || prev.soilType,
       }));
 
-      toast.success(`Location detected: ${county || 'Unknown'}, Kenya`, {
-        description: detectedSoil && detectedClimate ? `Climate: ${detectedClimate}, Soil: ${detectedSoil}` : undefined,
-      });
-    } catch (error: any) {
-      toast.error('Location detection failed', {
-        description: error.message || 'Please enter your location manually',
+      // Step 6: Show success message
+      const successParts: string[] = [];
+      if (detectedCounty) successParts.push(detectedCounty);
+      if (detectedAgroZone) successParts.push(`Zone: ${detectedAgroZone}`);
+      
+      const descriptionParts: string[] = [];
+      if (detectedClimate) descriptionParts.push(`Climate: ${detectedClimate}`);
+      if (detectedSoil) descriptionParts.push(`Soil: ${detectedSoil}`);
+      
+      toast.success(
+        successParts.length > 0 
+          ? `Location detected: ${successParts.join(', ')}` 
+          : 'Location coordinates detected',
+        {
+          description: descriptionParts.length > 0 
+            ? descriptionParts.join(', ')
+            : detectedAgroZone 
+              ? `Agro-zone: ${detectedAgroZone}` 
+              : undefined,
+        }
+      );
+      
+      logger.log('Location detection completed successfully');
+    } catch (error: unknown) {
+      logger.error('Location detection failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Provide helpful error message
+      let userMessage = 'Location detection failed';
+      let userDescription = errorMessage;
+      
+      if (errorMessage.includes('permission')) {
+        userDescription = 'Please allow location access in your browser settings';
+      } else if (errorMessage.includes('timeout')) {
+        userDescription = 'Location request timed out. Please try again or enter manually.';
+      } else if (errorMessage.includes('unavailable')) {
+        userDescription = 'Location services unavailable. Please enter your location manually.';
+      }
+      
+      toast.error(userMessage, {
+        description: userDescription,
       });
     } finally {
       setDetectingLocation(false);
@@ -111,8 +183,8 @@ export default function KenyaOnboarding() {
       toast.error(language === 'sw' ? "Tafadhali chagua aina ya udongo" : "Please select a soil type");
       return;
     }
-    if (step === 2 && (!formData.county || !formData.phone)) {
-      toast.error(language === 'sw' ? "Tafadhali jaza kaunti na nambari ya simu" : "Please fill county and phone number");
+    if (step === 2 && (!formData.county || !formData.phone || !formData.agroZone)) {
+      toast.error(language === 'sw' ? "Tafadhali jaza kaunti, nambari ya simu, na eneo la kilimo-ekolojia" : "Please fill county, phone number, and agro-ecological zone");
       return;
     }
     if (step === 3 && !formData.landSize) {
@@ -134,31 +206,55 @@ export default function KenyaOnboarding() {
   };
 
   const handleSubmit = async () => {
-    if (formData.goals.length === 0) {
-      toast.error(language === 'sw' ? "Chagua angalau lengo moja" : "Please select at least one conservation goal");
-      return;
-    }
-
-    if (!validateKenyanPhone(formData.phone)) {
-      toast.error(language === 'sw' ? "Nambari ya simu si sahihi" : "Invalid phone number. Use format: 0712345678 or +254712345678");
-      return;
-    }
-
     setLoading(true);
+    
+    // Validate all input using Zod schema
+    const landSizeNum = Number.parseFloat(formData.landSize);
+    if (Number.isNaN(landSizeNum) || landSizeNum <= 0) {
+      toast.error(language === 'sw' ? "Ingiza ukubwa halali wa ardhi" : "Please enter a valid land size");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.soilType || !formData.climateZone || !formData.county || !formData.agroZone) {
+      toast.error(language === 'sw' ? "Tafadhali jaza sehemu zote za lazima" : "Please complete all required fields");
+      setLoading(false);
+      return;
+    }
+
+    const validation = validateInput(onboardingSchema, {
+      county: formData.county,
+      constituency: formData.constituency || undefined,
+      agro_zone: formData.agroZone,
+      soil_type: formData.soilType,
+      climate_zone: formData.climateZone,
+      land_size_hectares: landSizeNum,
+      conservation_goals: formData.goals,
+      phone: formData.phone,
+    });
+
+    if (!validation.success) {
+      const firstError = validation.errors?.errors[0];
+      toast.error(firstError?.message || (language === 'sw' ? "Tafadhali angalia maingizo yako" : "Please check your input"));
+      setLoading(false);
+      return;
+    }
+
     try {
+      // Sanitize inputs before saving
       const { error } = await supabase
         .from("profiles")
         .update({
-          soil_type: formData.soilType,
-          climate_zone: formData.climateZone,
-          land_size_hectares: parseFloat(formData.landSize),
-          latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-          longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-          county: formData.county,
-          constituency: formData.constituency,
-          agro_zone: formData.agroZone,
-          phone: formatKenyanPhone(formData.phone),
-          conservation_goals: formData.goals as ("aesthetic_beauty" | "biodiversity" | "carbon_sequestration" | "erosion_control" | "food_production" | "water_management" | "wildlife_habitat")[],
+          soil_type: validation.data?.soil_type,
+          climate_zone: validation.data?.climate_zone,
+          land_size_hectares: validation.data?.land_size_hectares,
+          latitude: formData.latitude ? Number.parseFloat(formData.latitude) : null,
+          longitude: formData.longitude ? Number.parseFloat(formData.longitude) : null,
+          county: sanitizeString(validation.data?.county || ''),
+          constituency: validation.data?.constituency ? sanitizeString(validation.data.constituency) : null,
+          agro_zone: sanitizeString(validation.data?.agro_zone || ''),
+          phone: validation.data?.phone,
+          conservation_goals: validation.data?.conservation_goals,
           onboarding_completed: true,
         })
         .eq("user_id", user?.id);
@@ -171,7 +267,7 @@ export default function KenyaOnboarding() {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Force page reload to ensure ProtectedRoute sees updated data
-      window.location.href = "/";
+      globalThis.location.href = "/";
     } catch (error: any) {
       toast.error(error.message || "Failed to save profile");
     } finally {
@@ -278,6 +374,50 @@ export default function KenyaOnboarding() {
                   value={formData.constituency}
                   onChange={(e) => setFormData({...formData, constituency: e.target.value})}
                 />
+              </div>
+
+              <div>
+                <Label>{language === 'sw' ? 'Eneo la Kilimo-Ekolojia' : 'Agro-Ecological Zone'} *</Label>
+                <Select value={formData.agroZone} onValueChange={(value) => setFormData({...formData, agroZone: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={language === 'sw' ? 'Chagua eneo la kilimo-ekolojia' : 'Select agro-ecological zone'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LH1">LH1 - Lower Highland 1</SelectItem>
+                    <SelectItem value="LH2">LH2 - Lower Highland 2</SelectItem>
+                    <SelectItem value="LH3">LH3 - Lower Highland 3</SelectItem>
+                    <SelectItem value="LH4">LH4 - Lower Highland 4</SelectItem>
+                    <SelectItem value="UM1">UM1 - Upper Midland 1</SelectItem>
+                    <SelectItem value="UM2">UM2 - Upper Midland 2</SelectItem>
+                    <SelectItem value="UM3">UM3 - Upper Midland 3</SelectItem>
+                    <SelectItem value="UM4">UM4 - Upper Midland 4</SelectItem>
+                    <SelectItem value="LM1">LM1 - Lower Midland 1</SelectItem>
+                    <SelectItem value="LM2">LM2 - Lower Midland 2</SelectItem>
+                    <SelectItem value="LM3">LM3 - Lower Midland 3</SelectItem>
+                    <SelectItem value="LM4">LM4 - Lower Midland 4</SelectItem>
+                    <SelectItem value="LM5">LM5 - Lower Midland 5</SelectItem>
+                    <SelectItem value="IL1">IL1 - Inland Lowland 1</SelectItem>
+                    <SelectItem value="IL2">IL2 - Inland Lowland 2</SelectItem>
+                    <SelectItem value="IL3">IL3 - Inland Lowland 3</SelectItem>
+                    <SelectItem value="IL4">IL4 - Inland Lowland 4</SelectItem>
+                    <SelectItem value="IL5">IL5 - Inland Lowland 5</SelectItem>
+                    <SelectItem value="IL6">IL6 - Inland Lowland 6</SelectItem>
+                    <SelectItem value="CL1">CL1 - Coastal Lowland 1</SelectItem>
+                    <SelectItem value="CL2">CL2 - Coastal Lowland 2</SelectItem>
+                    <SelectItem value="CL3">CL3 - Coastal Lowland 3</SelectItem>
+                    <SelectItem value="CL4">CL4 - Coastal Lowland 4</SelectItem>
+                    <SelectItem value="CL5">CL5 - Coastal Lowland 5</SelectItem>
+                    <SelectItem value="UH1">UH1 - Upper Highland 1</SelectItem>
+                    <SelectItem value="UH2">UH2 - Upper Highland 2</SelectItem>
+                    <SelectItem value="UH3">UH3 - Upper Highland 3</SelectItem>
+                    <SelectItem value="UH4">UH4 - Upper Highland 4</SelectItem>
+                    <SelectItem value="UH5">UH5 - Upper Highland 5</SelectItem>
+                    <SelectItem value="UH6">UH6 - Upper Highland 6</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {language === 'sw' ? 'Eneo hili linaathiri aina za miti zinazofaa' : 'This zone affects which trees are suitable for your area'}
+                </p>
               </div>
             </div>
           )}

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/utils/logger';
+import { sanitizeString, notesSchema } from '@/utils/validation';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -118,6 +119,13 @@ export default function AdminOverview() {
       return;
     }
 
+    // Validate and sanitize rejection reason
+    const validation = notesSchema.safeParse(rejectionReason);
+    if (!validation.success) {
+      toast.error('Rejection reason is too long (max 1000 characters)');
+      return;
+    }
+
     setProcessing(true);
     try {
       const { error } = await supabase
@@ -126,7 +134,7 @@ export default function AdminOverview() {
           status: 'rejected',
           verified_at: new Date().toISOString(),
           verified_by: (await supabase.auth.getUser()).data.user?.id,
-          rejection_reason: rejectionReason,
+          rejection_reason: sanitizeString(rejectionReason),
         })
         .eq('id', selectedSubmission.id);
 
@@ -272,9 +280,9 @@ export default function AdminOverview() {
                           ) : (
                             <p className="font-medium text-muted-foreground">Location not provided</p>
                           )}
-                          {submission.latitude && submission.longitude ? (
+                          {submission.latitude != null && submission.longitude != null ? (
                             <p className="text-xs text-muted-foreground">
-                              {submission.latitude.toFixed(6)}, {submission.longitude.toFixed(6)}
+                              {Number(submission.latitude).toFixed(6)}, {Number(submission.longitude).toFixed(6)}
                             </p>
                           ) : (
                             <p className="text-xs text-red-500">⚠️ No GPS data</p>
@@ -298,7 +306,7 @@ export default function AdminOverview() {
 
                   {/* Actions */}
                   <div className="flex flex-col gap-2 md:gap-3">
-                    {submission.latitude && submission.longitude ? (
+                    {submission.latitude != null && submission.longitude != null ? (
                       <a
                         href={`https://www.google.com/maps?q=${submission.latitude},${submission.longitude}`}
                         target="_blank"
@@ -364,7 +372,11 @@ export default function AdminOverview() {
                       <div
                         className="h-full bg-primary"
                         style={{
-                          width: `${(count as number / Math.max(...Object.values(countyData).map(v => v as number))) * 100}%`
+                          width: `${(() => {
+                            const values = Object.values(countyData).map(v => v as number);
+                            const max = values.length > 0 ? Math.max(...values) : 1;
+                            return max > 0 ? ((count as number / max) * 100) : 0;
+                          })()}%`
                         }}
                       />
                     </div>

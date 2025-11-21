@@ -27,6 +27,81 @@ declare const Deno: {
   };
 };
 
+// Rate limiting configuration
+interface RateLimitStore {
+  [key: string]: {
+    count: number;
+    resetAt: number;
+  };
+}
+
+// In-memory rate limit store (for edge functions, consider using Redis in production)
+const rateLimitStore: RateLimitStore = {};
+
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 30; // 30 requests per minute per IP
+
+/**
+ * Check and enforce rate limiting
+ * Returns true if request should be allowed, false if rate limited
+ */
+function checkRateLimit(identifier: string): { allowed: boolean; remaining: number; resetAt: number } {
+  const now = Date.now();
+  const key = identifier;
+  
+  // Clean up old entries (simple cleanup, in production use Redis with TTL)
+  Object.keys(rateLimitStore).forEach(k => {
+    if (rateLimitStore[k].resetAt < now) {
+      delete rateLimitStore[k];
+    }
+  });
+  
+  const limit = rateLimitStore[key];
+  
+  if (!limit || limit.resetAt < now) {
+    // New window or expired window
+    rateLimitStore[key] = {
+      count: 1,
+      resetAt: now + RATE_LIMIT_WINDOW_MS,
+    };
+    return {
+      allowed: true,
+      remaining: RATE_LIMIT_MAX_REQUESTS - 1,
+      resetAt: now + RATE_LIMIT_WINDOW_MS,
+    };
+  }
+  
+  if (limit.count >= RATE_LIMIT_MAX_REQUESTS) {
+    // Rate limit exceeded
+    return {
+      allowed: false,
+      remaining: 0,
+      resetAt: limit.resetAt,
+    };
+  }
+  
+  // Increment counter
+  limit.count++;
+  return {
+    allowed: true,
+    remaining: RATE_LIMIT_MAX_REQUESTS - limit.count,
+    resetAt: limit.resetAt,
+  };
+}
+
+/**
+ * Get client identifier for rate limiting
+ * Uses IP address or user ID if available
+ */
+function getClientIdentifier(req: Request): string {
+  // Try to get IP from headers (Supabase adds this)
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  const realIp = req.headers.get('x-real-ip');
+  const ip = forwardedFor?.split(',')[0]?.trim() || realIp || 'unknown';
+  
+  return ip;
+}
+
 // CORS configuration
 // Allowed origins can be set via ALLOWED_ORIGINS environment variable (comma-separated)
 // Example: ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
@@ -87,6 +162,32 @@ serve(async (req) => {
       }
     );
   }
+  
+  // Rate limiting
+  const clientId = getClientIdentifier(req);
+  const rateLimit = checkRateLimit(clientId);
+  
+  if (!rateLimit.allowed) {
+    const retryAfter = Math.ceil((rateLimit.resetAt - Date.now()) / 1000);
+    return new Response(
+      JSON.stringify({ 
+        error: 'Rate limit exceeded',
+        message: 'Too many requests. Please try again later.',
+        retryAfter,
+      }),
+      { 
+        status: 429,
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+          'Retry-After': retryAfter.toString(),
+          'X-RateLimit-Limit': RATE_LIMIT_MAX_REQUESTS.toString(),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': rateLimit.resetAt.toString(),
+        }
+      }
+    );
+  }
 
   try {
     const { latitude, longitude } = await req.json();
@@ -100,7 +201,10 @@ serve(async (req) => {
       { 
         headers: { 
           ...corsHeaders, 
-          'Content-Type': 'application/json' 
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': RATE_LIMIT_MAX_REQUESTS.toString(),
+          'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+          'X-RateLimit-Reset': rateLimit.resetAt.toString(),
         } 
       }
     );

@@ -3,11 +3,25 @@
  * 
  * In development: logs to console
  * In production: only errors are logged, other logs are suppressed
- * 
- * TODO: Integrate with error tracking service (e.g., Sentry) for production
+ * Errors are automatically sent to Sentry in production
  */
 
 const isDev = import.meta.env.DEV;
+
+// Lazy load Sentry to avoid issues in test environment
+let Sentry: typeof import('@sentry/react') | null = null;
+
+const getSentry = async () => {
+  if (Sentry) return Sentry;
+  if (isDev) return null;
+  
+  try {
+    Sentry = await import('@sentry/react');
+    return Sentry;
+  } catch {
+    return null;
+  }
+};
 
 export const logger = {
   /**
@@ -20,22 +34,48 @@ export const logger = {
   },
 
   /**
-   * Log error messages (always logged)
+   * Log error messages (always logged, sent to Sentry in production)
    */
   error: (...args: unknown[]) => {
     console.error(...args);
-    // TODO: Send to error tracking service in production
-    // if (!isDev) {
-    //   Sentry.captureException(args[0]);
-    // }
+    
+    // Send to Sentry in production (fire and forget)
+    if (!isDev) {
+      getSentry().then((sentry) => {
+        if (sentry) {
+          const error = args[0];
+          if (error instanceof Error) {
+            sentry.captureException(error);
+          } else if (typeof error === 'string') {
+            sentry.captureMessage(error, 'error');
+          } else {
+            sentry.captureException(new Error(String(error)));
+          }
+        }
+      }).catch(() => {
+        // Sentry not available, ignore
+      });
+    }
   },
 
   /**
-   * Log warning messages (development only)
+   * Log warning messages (development only, sent to Sentry as warnings in production)
    */
   warn: (...args: unknown[]) => {
     if (isDev) {
       console.warn(...args);
+    } else {
+      // Send warnings to Sentry in production (fire and forget)
+      getSentry().then((sentry) => {
+        if (sentry) {
+          const warning = args[0];
+          if (typeof warning === 'string') {
+            sentry.captureMessage(warning, 'warning');
+          }
+        }
+      }).catch(() => {
+        // Sentry not available, ignore
+      });
     }
   },
 

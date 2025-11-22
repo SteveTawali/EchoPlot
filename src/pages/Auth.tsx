@@ -11,12 +11,39 @@ import { signInSchema, signUpSchema, validateInput } from "@/utils/validation";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, resetPassword } = useAuth();
   const navigate = useNavigate();
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (!email) {
+        toast.error("Please enter your email address");
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await resetPassword(email);
+      if (error) {
+        toast.error(error.message || "Failed to send reset email");
+      } else {
+        toast.success("Password reset email sent! Check your inbox.");
+        setIsForgotPassword(false);
+        setIsLogin(true);
+      }
+    } catch (error) {
+      toast.error("An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,8 +109,8 @@ const Auth = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
+        <form onSubmit={isForgotPassword ? handleForgotPassword : handleSubmit} className="space-y-4">
+          {!isLogin && !isForgotPassword && (
             <div className="space-y-2">
               <Label htmlFor="fullName">Full Name</Label>
               <Input
@@ -111,24 +138,39 @@ const Auth = () => {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={loading}
-              minLength={6}
-            />
-            {!isLogin && (
-              <p className="text-xs text-muted-foreground">
-                Must be at least 6 characters with uppercase, lowercase, and number
-              </p>
-            )}
-          </div>
+          {!isForgotPassword && (
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+                minLength={6}
+              />
+              {!isLogin && (
+                <p className="text-xs text-muted-foreground">
+                  Must be at least 6 characters with uppercase, lowercase, and number
+                </p>
+              )}
+            </div>
+          )}
+
+          {isLogin && !isForgotPassword && (
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsForgotPassword(true)}
+                className="text-sm text-primary hover:underline"
+                disabled={loading}
+              >
+                Forgot password?
+              </button>
+            </div>
+          )}
 
           <Button
             type="submit"
@@ -136,21 +178,41 @@ const Auth = () => {
             variant="hero"
             disabled={loading}
           >
-            {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
+            {loading
+              ? "Loading..."
+              : isForgotPassword
+                ? "Send Reset Link"
+                : isLogin
+                  ? "Sign In"
+                  : "Sign Up"}
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-primary hover:underline"
-            disabled={loading}
-          >
-            {isLogin
-              ? "Don't have an account? Sign up"
-              : "Already have an account? Sign in"}
-          </button>
+        <div className="mt-6 text-center space-y-2">
+          {isForgotPassword ? (
+            <button
+              type="button"
+              onClick={() => {
+                setIsForgotPassword(false);
+                setIsLogin(true);
+              }}
+              className="text-sm text-primary hover:underline"
+              disabled={loading}
+            >
+              Back to sign in
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-sm text-primary hover:underline"
+              disabled={loading}
+            >
+              {isLogin
+                ? "Don't have an account? Sign up"
+                : "Already have an account? Sign in"}
+            </button>
+          )}
         </div>
       </Card>
     </div>

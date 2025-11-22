@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,16 +8,34 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Leaf } from "lucide-react";
 import { signInSchema, signUpSchema, validateInput } from "@/utils/validation";
+import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, resetPassword } = useAuth();
   const navigate = useNavigate();
+
+  // Check if user is coming from password reset email
+  useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
+
+    if (type === 'recovery' && accessToken) {
+      setIsResettingPassword(true);
+      setIsForgotPassword(false);
+      setIsLogin(false);
+    }
+  }, [searchParams]);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +55,45 @@ const Auth = () => {
         toast.success("Password reset email sent! Check your inbox.");
         setIsForgotPassword(false);
         setIsLogin(true);
+      }
+    } catch (error) {
+      toast.error("An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (newPassword !== confirmPassword) {
+        toast.error("Passwords do not match");
+        setLoading(false);
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        toast.error("Password must be at least 6 characters");
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to reset password");
+      } else {
+        toast.success("Password updated successfully! Please sign in.");
+        setIsResettingPassword(false);
+        setIsLogin(true);
+        setNewPassword("");
+        setConfirmPassword("");
+        // Clear the hash from URL
+        window.history.replaceState(null, "", window.location.pathname);
       }
     } catch (error) {
       toast.error("An error occurred");
@@ -105,12 +162,16 @@ const Auth = () => {
           </div>
           <h1 className="text-3xl font-bold text-center">EchoPlot</h1>
           <p className="text-muted-foreground text-center mt-2">
-            {isLogin ? "Welcome back!" : "Transform tree planting into intergenerational stewardship"}
+            {isResettingPassword
+              ? "Set your new password"
+              : isLogin
+                ? "Welcome back!"
+                : "Transform tree planting into intergenerational stewardship"}
           </p>
         </div>
 
-        <form onSubmit={isForgotPassword ? handleForgotPassword : handleSubmit} className="space-y-4">
-          {!isLogin && !isForgotPassword && (
+        <form onSubmit={isResettingPassword ? handleResetPassword : isForgotPassword ? handleForgotPassword : handleSubmit} className="space-y-4">
+          {!isLogin && !isForgotPassword && !isResettingPassword && (
             <div className="space-y-2">
               <Label htmlFor="fullName">Full Name</Label>
               <Input
@@ -125,20 +186,54 @@ const Auth = () => {
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
+          {!isResettingPassword && (
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
+          )}
 
-          {!isForgotPassword && (
+          {isResettingPassword ? (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">New Password</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  minLength={6}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  minLength={6}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Must be at least 6 characters
+                </p>
+              </div>
+            </>
+          ) : !isForgotPassword && (
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -159,7 +254,7 @@ const Auth = () => {
             </div>
           )}
 
-          {isLogin && !isForgotPassword && (
+          {isLogin && !isForgotPassword && !isResettingPassword && (
             <div className="flex justify-end">
               <button
                 type="button"
@@ -180,16 +275,31 @@ const Auth = () => {
           >
             {loading
               ? "Loading..."
-              : isForgotPassword
-                ? "Send Reset Link"
-                : isLogin
-                  ? "Sign In"
-                  : "Sign Up"}
+              : isResettingPassword
+                ? "Update Password"
+                : isForgotPassword
+                  ? "Send Reset Link"
+                  : isLogin
+                    ? "Sign In"
+                    : "Sign Up"}
           </Button>
         </form>
 
         <div className="mt-6 text-center space-y-2">
-          {isForgotPassword ? (
+          {isResettingPassword ? (
+            <button
+              type="button"
+              onClick={() => {
+                setIsResettingPassword(false);
+                setIsLogin(true);
+                window.history.replaceState(null, "", window.location.pathname);
+              }}
+              className="text-sm text-primary hover:underline"
+              disabled={loading}
+            >
+              Back to sign in
+            </button>
+          ) : isForgotPassword ? (
             <button
               type="button"
               onClick={() => {

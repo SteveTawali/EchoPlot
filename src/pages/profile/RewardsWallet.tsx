@@ -10,13 +10,22 @@ import { Badge } from '@/components/ui/badge';
 import { Wallet, ArrowUpRight, ArrowDownRight, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+interface Transaction {
+  id: string;
+  status: 'verified' | 'pending' | 'rejected';
+  created_at: string;
+  tree_name: string;
+  reward_amount: number;
+  reward_paid: boolean;
+}
+
 const RewardsWallet = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
   const { toast } = useToast();
   const [balance, setBalance] = useState(0);
   const [pendingBalance, setPendingBalance] = useState(0);
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawPhone, setWithdrawPhone] = useState('');
   const [loading, setLoading] = useState(true);
@@ -88,7 +97,7 @@ const RewardsWallet = () => {
 
   const handleWithdraw = async () => {
     const amount = parseFloat(withdrawAmount);
-    
+
     if (isNaN(amount) || amount <= 0) {
       toast({
         title: language === 'en' ? 'Invalid Amount' : 'Kiasi Kisichohali',
@@ -118,8 +127,8 @@ const RewardsWallet = () => {
 
     toast({
       title: language === 'en' ? 'Processing Withdrawal...' : 'Inashughulikia Uondoaji...',
-      description: language === 'en' 
-        ? 'Please wait while we process your M-Pesa withdrawal' 
+      description: language === 'en'
+        ? 'Please wait while we process your M-Pesa withdrawal'
         : 'Tafadhali subiri tunaposhughulikia uondoaji wako wa M-Pesa',
     });
 
@@ -128,8 +137,8 @@ const RewardsWallet = () => {
 
     toast({
       title: language === 'en' ? 'Withdrawal Successful!' : 'Uondoaji Umefaulu!',
-      description: language === 'en' 
-        ? `KSh ${amount.toFixed(2)} sent to ${withdrawPhone}` 
+      description: language === 'en'
+        ? `KSh ${amount.toFixed(2)} sent to ${withdrawPhone}`
         : `KSh ${amount.toFixed(2)} imetumwa kwa ${withdrawPhone}`,
     });
 
@@ -181,8 +190,8 @@ const RewardsWallet = () => {
         <CardHeader>
           <CardTitle>{language === 'en' ? 'Withdraw to M-Pesa' : 'Ondoa kwa M-Pesa'}</CardTitle>
           <CardDescription>
-            {language === 'en' 
-              ? 'Enter amount and M-Pesa number to withdraw funds' 
+            {language === 'en'
+              ? 'Enter amount and M-Pesa number to withdraw funds'
               : 'Weka kiasi na nambari ya M-Pesa ili kuondoa fedha'}
           </CardDescription>
         </CardHeader>
@@ -234,9 +243,8 @@ const RewardsWallet = () => {
                   className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full ${
-                      tx.status === 'verified' ? 'bg-green-100' : 'bg-yellow-100'
-                    }`}>
+                    <div className={`p-2 rounded-full ${tx.status === 'verified' ? 'bg-green-100' : 'bg-yellow-100'
+                      }`}>
                       {tx.status === 'verified' ? (
                         <ArrowDownRight className="h-4 w-4 text-green-600" />
                       ) : (
@@ -251,9 +259,8 @@ const RewardsWallet = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`font-bold ${
-                      tx.status === 'verified' ? 'text-green-600' : 'text-yellow-600'
-                    }`}>
+                    <p className={`font-bold ${tx.status === 'verified' ? 'text-green-600' : 'text-yellow-600'
+                      }`}>
                       {tx.status === 'verified' ? '+' : ''}KSh {tx.reward_amount || 0}
                     </p>
                     <Badge variant={tx.status === 'verified' ? 'default' : 'secondary'} className="text-xs">

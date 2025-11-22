@@ -44,6 +44,18 @@ const conservationGoals: { value: ConservationGoal; label: string }[] = [
   { value: "aesthetic_beauty", label: "Aesthetic Beauty" },
 ];
 
+interface WeatherData {
+  location: {
+    name: string;
+    country: string;
+  };
+  current: {
+    temperature: number;
+    humidity: number;
+  };
+  estimated_annual_rainfall: number;
+}
+
 const Onboarding = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -51,14 +63,24 @@ const Onboarding = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    soilType: null as SoilType | null,
-    climateZone: null as ClimateZone | null,
+  interface OnboardingFormData {
+    soilType: SoilType | null;
+    climateZone: ClimateZone | null;
+    landSize: string;
+    latitude: string;
+    longitude: string;
+    goals: ConservationGoal[];
+    weatherData: WeatherData | null;
+  }
+
+  const [formData, setFormData] = useState<OnboardingFormData>({
+    soilType: null,
+    climateZone: null,
     landSize: "",
     latitude: "",
     longitude: "",
-    goals: [] as ConservationGoal[],
-    weatherData: null as any,
+    goals: [],
+    weatherData: null,
   });
 
   const handleDetectLocation = async () => {
@@ -66,12 +88,13 @@ const Onboarding = () => {
     try {
       // Use smart detection with GPS -> IP fallback
       const location = await detectLocation();
-      
+
       // Get weather data from our edge function
-      const { data: weatherData, error } = await supabase.functions.invoke('get-weather-data', {
-        body: { 
-          latitude: location.latitude, 
-          longitude: location.longitude 
+      // Get weather data from our edge function
+      const { data: weatherData, error } = await supabase.functions.invoke<WeatherData>('get-weather-data', {
+        body: {
+          latitude: location.latitude,
+          longitude: location.longitude
         }
       });
 
@@ -89,14 +112,14 @@ const Onboarding = () => {
       if (weatherData?.current) {
         const detectedClimate = determineClimateZone(location.latitude, weatherData.current.temperature);
         const detectedSoil = determineSoilType(weatherData.current.humidity, weatherData.estimated_annual_rainfall);
-        
+
         logger.log('🌍 Auto-detect results:', {
           climate: detectedClimate,
           soil: detectedSoil,
           weatherData: weatherData.current,
           rainfall: weatherData.estimated_annual_rainfall
         });
-        
+
         setFormData(prev => ({
           ...prev,
           latitude: location.latitude.toString(),
@@ -106,15 +129,15 @@ const Onboarding = () => {
           soilType: detectedSoil,
         }));
 
-        const sourceLabel = location.source === 'gps' ? 'GPS' : 
-                           location.source === 'ip' ? 'IP location' : 
-                           'cached data';
+        const sourceLabel = location.source === 'gps' ? 'GPS' :
+          location.source === 'ip' ? 'IP location' :
+            'cached data';
 
         toast.success(`Location detected via ${sourceLabel}: ${weatherData.location.name}, ${weatherData.location.country}`, {
           description: `Climate: ${detectedClimate}, Soil: ${detectedSoil}`,
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       toast.error('Location detection failed', {
         description: error.message || 'Please enter your location manually',
       });
@@ -180,7 +203,7 @@ const Onboarding = () => {
 
       toast.success("Profile completed! Let's find your perfect trees.");
       navigate("/");
-    } catch (error: any) {
+    } catch (error) {
       toast.error(error.message || "Failed to save profile");
     } finally {
       setLoading(false);
@@ -280,7 +303,7 @@ const Onboarding = () => {
                   required
                 />
               </div>
-              
+
               <div className="p-4 bg-muted/50 rounded-lg space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm font-semibold">Location Coordinates</Label>
@@ -310,7 +333,7 @@ const Onboarding = () => {
                 <p className="text-xs text-muted-foreground">
                   Location helps us provide accurate tree recommendations
                 </p>
-                
+
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   <div className="space-y-1">
                     <Label htmlFor="latitude" className="text-xs">Latitude</Label>
@@ -337,7 +360,7 @@ const Onboarding = () => {
                     />
                   </div>
                 </div>
-                
+
                 {formData.weatherData && (
                   <div className="mt-3 pt-3 border-t border-border">
                     <p className="text-xs font-semibold mb-1">Detected Climate Data:</p>

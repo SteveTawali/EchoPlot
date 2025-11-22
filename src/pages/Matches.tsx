@@ -26,28 +26,28 @@ const Matches = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchMatches = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("tree_matches")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("matched_at", { ascending: false });
+
+        if (error) throw error;
+        setMatches(data || []);
+      } catch (error) {
+        toast.error("Failed to load matches");
+        logger.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchMatches();
   }, [user]);
-
-  const fetchMatches = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from("tree_matches")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("matched_at", { ascending: false });
-
-      if (error) throw error;
-      setMatches(data || []);
-    } catch (error: any) {
-      toast.error("Failed to load matches");
-      logger.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const toggleFavorite = async (matchId: string, currentStatus: boolean) => {
     try {
@@ -63,7 +63,7 @@ const Matches = () => {
       );
 
       toast.success(!currentStatus ? "Added to favorites" : "Removed from favorites");
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Failed to update favorite");
     }
   };
@@ -79,7 +79,7 @@ const Matches = () => {
 
       setMatches((prev) => prev.filter((m) => m.id !== matchId));
       toast.success("Match deleted");
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Failed to delete match");
     }
   };

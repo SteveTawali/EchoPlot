@@ -14,6 +14,14 @@ import { extractGPSData, compressImage, validateImage } from "@/utils/imageUtils
 import { reverseGeocode } from "@/utils/kenyaLocation";
 import { verificationSchema, validateInput, sanitizeString, latitudeSchema, longitudeSchema } from "@/utils/validation";
 
+interface UserProfile {
+  latitude?: number;
+  longitude?: number;
+  county?: string;
+  constituency?: string;
+  phone?: string;
+}
+
 interface VerificationUploadProps {
   matchId?: string;
   treeName: string;
@@ -39,7 +47,7 @@ export const VerificationUpload = ({
   const [manualLng, setManualLng] = useState("");
   const [notes, setNotes] = useState("");
   const [plantingDate, setPlantingDate] = useState(new Date().toISOString().split('T')[0]);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   // Load user profile on mount
   useEffect(() => {
@@ -50,7 +58,7 @@ export const VerificationUpload = ({
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
-      
+
       if (data) {
         setUserProfile(data);
         // Pre-fill with user's profile location if available
@@ -94,9 +102,9 @@ export const VerificationUpload = ({
         toast.success("📍 GPS coordinates detected from photo!");
       } else if (userProfile?.latitude && userProfile?.longitude) {
         // Use profile location as fallback
-        setGpsData({ 
-          latitude: userProfile.latitude, 
-          longitude: userProfile.longitude 
+        setGpsData({
+          latitude: userProfile.latitude,
+          longitude: userProfile.longitude
         });
         const location = await reverseGeocode(userProfile.latitude, userProfile.longitude);
         const locationStr = [location.constituency, location.county].filter(Boolean).join(", ");
@@ -156,16 +164,16 @@ export const VerificationUpload = ({
     if (manualLocation && manualLat && manualLng) {
       const latNum = parseFloat(manualLat);
       const lngNum = parseFloat(manualLng);
-      
+
       // Validate coordinates
       const latValidation = latitudeSchema.safeParse(latNum);
       const lngValidation = longitudeSchema.safeParse(lngNum);
-      
+
       if (!latValidation.success || !lngValidation.success) {
         toast.error("Invalid coordinates. Latitude must be -90 to 90, Longitude must be -180 to 180.");
         return;
       }
-      
+
       finalLat = latNum;
       finalLng = lngNum;
     }
@@ -174,7 +182,7 @@ export const VerificationUpload = ({
       toast.error("Location required. Please enable GPS or enter manually.");
       return;
     }
-    
+
     // Validate verification data
     const validation = validateInput(verificationSchema, {
       tree_name: treeName,
@@ -183,7 +191,7 @@ export const VerificationUpload = ({
       planting_date: plantingDate || new Date().toISOString().split('T')[0],
       notes: notes || undefined,
     });
-    
+
     if (!validation.success) {
       const firstError = validation.errors?.errors[0];
       toast.error(firstError?.message || "Invalid input data");
@@ -197,7 +205,7 @@ export const VerificationUpload = ({
       // Compress image
       setProgress(20);
       const compressedImage = await compressImage(selectedImage);
-      
+
       // Upload to storage
       setProgress(40);
       const fileName = `${user.id}/${Date.now()}-${selectedImage.name}`;
@@ -244,11 +252,11 @@ export const VerificationUpload = ({
       toast.success("🌳 Verification submitted successfully!", {
         description: "Awaiting review by county moderator"
       });
-      
+
       // Cleanup
       URL.revokeObjectURL(preview);
       if (onSuccess) onSuccess();
-    } catch (error: any) {
+    } catch (error) {
       logger.error("Upload error:", error);
       toast.error(error.message || "Failed to upload verification");
     } finally {

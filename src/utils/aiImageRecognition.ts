@@ -1,7 +1,7 @@
 import type { KenyanTreeSpecies } from "@/data/kenya";
 import { logger } from "@/utils/logger";
 
-interface TreeRecognitionResult {
+export interface TreeRecognitionResult {
   species: {
     id: string;
     name: string;
@@ -37,12 +37,14 @@ interface ImageAnalysisFeatures {
  * AI-Powered Tree Species Recognition System
  * Uses computer vision to identify tree species from photos
  */
+export interface SpeciesData {
+  visualFeatures: ImageAnalysisFeatures;
+  commonNames: string[];
+  scientificName: string;
+}
+
 export class AITreeRecognition {
-  private speciesDatabase: Map<string, {
-    visualFeatures: ImageAnalysisFeatures;
-    commonNames: string[];
-    scientificName: string;
-  }> = new Map();
+  private speciesDatabase: Map<string, SpeciesData> = new Map();
 
   constructor() {
     this.initializeSpeciesDatabase();
@@ -58,16 +60,16 @@ export class AITreeRecognition {
     try {
       // Extract visual features from image
       const features = await this.extractImageFeatures(imageFile);
-      
+
       // Identify species using AI model
       const species = await this.identifySpecies(features, expectedLocation);
-      
+
       // Assess tree health
       const healthAssessment = await this.assessTreeHealth(features);
-      
+
       // Determine growth stage
       const growthStage = await this.determineGrowthStage(features);
-      
+
       // Validate planting location
       const locationValidation = await this.validatePlantingLocation(features, expectedLocation);
 
@@ -104,7 +106,7 @@ export class AITreeRecognition {
 
         // Analyze image features
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        
+
         const features: ImageAnalysisFeatures = {
           dominantColors: this.extractDominantColors(imageData),
           texturePatterns: this.analyzeTexturePatterns(imageData),
@@ -135,7 +137,7 @@ export class AITreeRecognition {
     // Simulate AI model prediction
     for (const [speciesId, speciesData] of this.speciesDatabase.entries()) {
       const confidence = this.calculateSpeciesConfidence(features, speciesData, expectedLocation);
-      
+
       if (confidence > 0.3) { // Only include reasonable matches
         candidates.push({
           id: speciesId,
@@ -156,7 +158,7 @@ export class AITreeRecognition {
    */
   private calculateSpeciesConfidence(
     features: ImageAnalysisFeatures,
-    speciesData: any,
+    speciesData: SpeciesData,
     expectedLocation?: { county: string; agroZone: string }
   ): number {
     let confidence = 0;
@@ -298,7 +300,7 @@ export class AITreeRecognition {
       const g = data[i + 1];
       const b = data[i + 2];
       const color = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-      
+
       colors.set(color, (colors.get(color) || 0) + 1);
     }
 
@@ -314,16 +316,16 @@ export class AITreeRecognition {
    */
   private analyzeTexturePatterns(imageData: ImageData): string[] {
     const patterns: string[] = [];
-    
+
     // Simplified texture analysis
     // In a real implementation, this would use more sophisticated computer vision techniques
-    
+
     // Detect common patterns
     if (this.detectPattern(imageData, 'leaf_veins')) patterns.push('leaf_veins');
     if (this.detectPattern(imageData, 'bark_grooves')) patterns.push('bark_grooves');
     if (this.detectPattern(imageData, 'soil_texture')) patterns.push('soil_texture');
     if (this.detectPattern(imageData, 'dense_vegetation')) patterns.push('dense_vegetation');
-    
+
     return patterns;
   }
 
@@ -333,7 +335,7 @@ export class AITreeRecognition {
   private detectPattern(imageData: ImageData, patternType: string): boolean {
     // Simplified pattern detection
     // Real implementation would use edge detection, texture analysis, etc.
-    
+
     switch (patternType) {
       case 'leaf_veins':
         return Math.random() > 0.5; // Simulate detection
@@ -380,14 +382,14 @@ export class AITreeRecognition {
     // Analyze brightness and contrast
     const data = imageData.data;
     let totalBrightness = 0;
-    
+
     for (let i = 0; i < data.length; i += 4) {
       const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
       totalBrightness += brightness;
     }
-    
+
     const averageBrightness = totalBrightness / (data.length / 4);
-    
+
     if (averageBrightness > 180) return 'excellent';
     if (averageBrightness > 120) return 'good';
     return 'poor';
@@ -399,7 +401,7 @@ export class AITreeRecognition {
   private assessImageQuality(imageData: ImageData): 'low' | 'medium' | 'high' {
     // Analyze image resolution and clarity
     const resolution = imageData.width * imageData.height;
-    
+
     if (resolution > 1000000) return 'high';
     if (resolution > 500000) return 'medium';
     return 'low';
@@ -411,7 +413,7 @@ export class AITreeRecognition {
   private calculateColorSimilarity(colors1: string[], colors2: string[]): number {
     let matches = 0;
     const total = Math.max(colors1.length, colors2.length);
-    
+
     for (const color1 of colors1) {
       for (const color2 of colors2) {
         if (this.colorsAreSimilar(color1, color2)) {
@@ -420,7 +422,7 @@ export class AITreeRecognition {
         }
       }
     }
-    
+
     return matches / total;
   }
 
@@ -431,15 +433,15 @@ export class AITreeRecognition {
     // Convert hex to RGB and calculate distance
     const rgb1 = this.hexToRgb(color1);
     const rgb2 = this.hexToRgb(color2);
-    
+
     if (!rgb1 || !rgb2) return false;
-    
+
     const distance = Math.sqrt(
       Math.pow(rgb1.r - rgb2.r, 2) +
       Math.pow(rgb1.g - rgb2.g, 2) +
       Math.pow(rgb1.b - rgb2.b, 2)
     );
-    
+
     return distance < 50; // Threshold for color similarity
   }
 
@@ -461,10 +463,10 @@ export class AITreeRecognition {
   private calculateTextureSimilarity(textures1: string[], textures2: string[]): number {
     const set1 = new Set(textures1);
     const set2 = new Set(textures2);
-    
+
     const intersection = new Set([...set1].filter(x => set2.has(x)));
     const union = new Set([...set1, ...set2]);
-    
+
     return union.size > 0 ? intersection.size / union.size : 0;
   }
 
@@ -481,7 +483,7 @@ export class AITreeRecognition {
   private initializeSpeciesDatabase(): void {
     // This would be populated with real species data and their visual characteristics
     // For now, using simplified data
-    
+
     this.speciesDatabase.set('mango', {
       visualFeatures: {
         dominantColors: ['#228B22', '#32CD32', '#8B4513'],

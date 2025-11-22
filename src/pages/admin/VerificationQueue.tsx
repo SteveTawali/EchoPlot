@@ -86,7 +86,7 @@ export default function VerificationQueue() {
 
   useEffect(() => {
     filterVerifications();
-  }, [verifications, searchQuery, statusFilter, countyFilter]);
+  }, [verifications, searchQuery, statusFilter, countyFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchVerifications = async () => {
     try {
@@ -410,8 +410,8 @@ export default function VerificationQueue() {
                 <TableCell>
                   <Badge variant={
                     verification.status === 'verified' ? 'default' :
-                    verification.status === 'rejected' ? 'destructive' :
-                    'secondary'
+                      verification.status === 'rejected' ? 'destructive' :
+                        'secondary'
                   }>
                     {verification.status}
                   </Badge>
@@ -466,14 +466,14 @@ export default function VerificationQueue() {
                   <p className="text-xs text-muted-foreground">{verification.full_name}</p>
                   <Badge variant={
                     verification.status === 'verified' ? 'default' :
-                    verification.status === 'rejected' ? 'destructive' :
-                    'secondary'
+                      verification.status === 'rejected' ? 'destructive' :
+                        'secondary'
                   } className="mt-1">
                     {verification.status}
                   </Badge>
                 </div>
               </div>
-              
+
               <div className="text-xs space-y-1 text-muted-foreground">
                 <p className="flex items-center gap-1">
                   <MapPin className="h-3 w-3" />

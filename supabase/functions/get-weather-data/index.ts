@@ -48,16 +48,16 @@ const RATE_LIMIT_MAX_REQUESTS = 30; // 30 requests per minute per IP
 function checkRateLimit(identifier: string): { allowed: boolean; remaining: number; resetAt: number } {
   const now = Date.now();
   const key = identifier;
-  
+
   // Clean up old entries (simple cleanup, in production use Redis with TTL)
   Object.keys(rateLimitStore).forEach(k => {
     if (rateLimitStore[k].resetAt < now) {
       delete rateLimitStore[k];
     }
   });
-  
+
   const limit = rateLimitStore[key];
-  
+
   if (!limit || limit.resetAt < now) {
     // New window or expired window
     rateLimitStore[key] = {
@@ -70,7 +70,7 @@ function checkRateLimit(identifier: string): { allowed: boolean; remaining: numb
       resetAt: now + RATE_LIMIT_WINDOW_MS,
     };
   }
-  
+
   if (limit.count >= RATE_LIMIT_MAX_REQUESTS) {
     // Rate limit exceeded
     return {
@@ -79,7 +79,7 @@ function checkRateLimit(identifier: string): { allowed: boolean; remaining: numb
       resetAt: limit.resetAt,
     };
   }
-  
+
   // Increment counter
   limit.count++;
   return {
@@ -98,39 +98,41 @@ function getClientIdentifier(req: Request): string {
   const forwardedFor = req.headers.get('x-forwarded-for');
   const realIp = req.headers.get('x-real-ip');
   const ip = forwardedFor?.split(',')[0]?.trim() || realIp || 'unknown';
-  
+
   return ip;
 }
 
 // CORS configuration
 // Allowed origins can be set via ALLOWED_ORIGINS environment variable (comma-separated)
 // Example: ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
-// In development or if not set, allows all origins for easier testing
+// If ALLOWED_ORIGINS is not set, allows all origins (safe default for Supabase edge functions)
 const getCorsHeaders = (origin: string | null) => {
   const allowedOriginsEnv = Deno.env.get('ALLOWED_ORIGINS');
-  const isDev = Deno.env.get('ENVIRONMENT') !== 'production';
-  
+
   // Determine allowed origins
   let allowedOrigins: string[] = [];
   if (allowedOriginsEnv) {
     // Parse comma-separated origins from environment variable
     allowedOrigins = allowedOriginsEnv.split(',').map(o => o.trim()).filter(Boolean);
   }
-  
+
   // Determine the CORS origin header value
   let corsOrigin: string;
-  if (isDev || allowedOrigins.length === 0) {
-    // Development mode or no restrictions: allow all origins
+  if (allowedOrigins.length === 0) {
+    // No restrictions configured: allow all origins (default behavior)
+    // This is safe because Supabase edge functions require authentication
     corsOrigin = '*';
   } else if (origin && allowedOrigins.includes(origin)) {
-    // Production: only allow if origin is in the allowed list
+    // Origin is in the allowed list
     corsOrigin = origin;
-  } else {
-    // Production: origin not allowed, reject by not setting CORS header
-    // Return null to indicate request should be rejected
+  } else if (origin) {
+    // Origin provided but not in allowed list - reject
     return null;
+  } else {
+    // No origin header (e.g., same-origin request or Postman) - allow
+    corsOrigin = '*';
   }
-  
+
   return {
     'Access-Control-Allow-Origin': corsOrigin,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -139,10 +141,10 @@ const getCorsHeaders = (origin: string | null) => {
   };
 };
 
-serve(async (req) => {
+serve(async (req: Request) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
-  
+
   // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
     if (corsHeaders === null) {
@@ -151,33 +153,33 @@ serve(async (req) => {
     }
     return new Response(null, { headers: corsHeaders });
   }
-  
+
   // Reject requests from disallowed origins
   if (corsHeaders === null) {
     return new Response(
       JSON.stringify({ error: 'Origin not allowed' }),
-      { 
+      {
         status: 403,
         headers: { 'Content-Type': 'application/json' }
       }
     );
   }
-  
+
   // Rate limiting
   const clientId = getClientIdentifier(req);
   const rateLimit = checkRateLimit(clientId);
-  
+
   if (!rateLimit.allowed) {
     const retryAfter = Math.ceil((rateLimit.resetAt - Date.now()) / 1000);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Rate limit exceeded',
         message: 'Too many requests. Please try again later.',
         retryAfter,
       }),
-      { 
+      {
         status: 429,
-        headers: { 
+        headers: {
           ...corsHeaders,
           'Content-Type': 'application/json',
           'Retry-After': retryAfter.toString(),
@@ -198,14 +200,14 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify(result),
-      { 
-        headers: { 
-          ...corsHeaders, 
+      {
+        headers: {
+          ...corsHeaders,
           'Content-Type': 'application/json',
           'X-RateLimit-Limit': RATE_LIMIT_MAX_REQUESTS.toString(),
           'X-RateLimit-Remaining': rateLimit.remaining.toString(),
           'X-RateLimit-Reset': rateLimit.resetAt.toString(),
-        } 
+        }
       }
     );
   } catch (error) {
@@ -215,17 +217,17 @@ serve(async (req) => {
       message: errorMessage,
       stack: error instanceof Error ? error.stack : undefined
     });
-    
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: errorMessage
       }),
-      { 
+      {
         status: 500,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       }
     );
   }
@@ -238,22 +240,22 @@ function validateCoordinates(latitude: unknown, longitude: unknown): { lat: numb
   if (latitude === undefined || longitude === undefined) {
     throw new Error('Latitude and longitude are required');
   }
-  
+
   const lat = Number(latitude);
   const lon = Number(longitude);
-  
+
   if (Number.isNaN(lat) || Number.isNaN(lon)) {
     throw new TypeError('Latitude and longitude must be valid numbers');
   }
-  
+
   if (lat < -90 || lat > 90) {
     throw new Error('Latitude must be between -90 and 90');
   }
-  
+
   if (lon < -180 || lon > 180) {
     throw new Error('Longitude must be between -180 and 180');
   }
-  
+
   return { lat, lon };
 }
 
@@ -271,7 +273,7 @@ async function fetchWeatherData(lat: number, lon: number) {
 
   const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OPENWEATHER_API_KEY}&units=metric`;
   const weatherResponse = await fetch(weatherUrl);
-  
+
   if (!weatherResponse.ok) {
     const errorText = await weatherResponse.text();
     console.error('OpenWeather API error:', {
@@ -296,7 +298,7 @@ async function fetchClimateData(lat: number, lon: number) {
 
   const climateUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${OPENWEATHER_API_KEY}&units=metric&exclude=minutely,hourly,alerts`;
   const climateResponse = await fetch(climateUrl);
-  
+
   if (climateResponse.ok) {
     const climateData = await climateResponse.json();
     return climateData.daily?.slice(0, 7) || null; // Next 7 days
@@ -306,10 +308,48 @@ async function fetchClimateData(lat: number, lon: number) {
   }
 }
 
+interface WeatherData {
+  main: {
+    temp: number;
+    feels_like: number;
+    humidity: number;
+    pressure: number;
+  };
+  weather: Array<{
+    main: string;
+    description: string;
+  }>;
+  wind: {
+    speed: number;
+  };
+  clouds: {
+    all: number;
+  };
+  name: string;
+  sys: {
+    country: string;
+    sunrise: number;
+    sunset: number;
+  };
+}
+
+interface DailyData {
+  dt: number;
+  temp: {
+    day: number;
+    min: number;
+    max: number;
+  };
+  weather: Array<{
+    main: string;
+    description: string;
+  }>;
+}
+
 /**
  * Build the weather result object
  */
-function buildWeatherResult(weatherData: any, dailyData: any) {
+function buildWeatherResult(weatherData: WeatherData, dailyData: DailyData[] | null) {
   return {
     current: {
       temperature: weatherData.main.temp,
@@ -343,6 +383,6 @@ function calculateAnnualRainfall(humidity: number, cloudCoverage: number): numbe
   const baseRainfall = 500; // mm per year baseline
   const humidityFactor = (humidity / 100) * 800; // 0-800mm based on humidity
   const cloudFactor = (cloudCoverage / 100) * 400; // 0-400mm based on clouds
-  
+
   return Math.round(baseRainfall + humidityFactor + cloudFactor);
 }

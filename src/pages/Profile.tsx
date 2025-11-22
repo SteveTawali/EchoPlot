@@ -8,12 +8,21 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Home } from 'lucide-react';
 
+interface UserProfile {
+  id: string;
+  user_id: string;
+  full_name: string;
+  avatar_url?: string;
+  county?: string;
+  created_at: string;
+}
+
 const Profile = () => {
   const { user } = useAuth();
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,7 +37,7 @@ const Profile = () => {
         .select('*')
         .eq('user_id', user.id)
         .single();
-      
+
       setProfile(data);
       setLoading(false);
     };

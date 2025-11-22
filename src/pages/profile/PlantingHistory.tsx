@@ -8,11 +8,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Search, MapPin, Calendar } from 'lucide-react';
 
+interface Planting {
+  id: string;
+  status: 'verified' | 'pending' | 'rejected';
+  created_at: string;
+  planting_date?: string;
+  tree_name: string;
+  county?: string;
+  constituency?: string;
+  reward_amount?: number;
+  notes?: string;
+  rejection_reason?: string;
+}
+
 const PlantingHistory = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
-  const [plantings, setPlantings] = useState<any[]>([]);
-  const [filteredPlantings, setFilteredPlantings] = useState<any[]>([]);
+  const [plantings, setPlantings] = useState<Planting[]>([]);
+  const [filteredPlantings, setFilteredPlantings] = useState<Planting[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
@@ -57,7 +70,7 @@ const PlantingHistory = () => {
   }, [plantings, statusFilter, searchTerm]);
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, any> = {
+    const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
       verified: { variant: 'default', label: language === 'en' ? 'Verified' : 'Imethibitishwa' },
       pending: { variant: 'secondary', label: language === 'en' ? 'Pending' : 'Inasubiri' },
       rejected: { variant: 'destructive', label: language === 'en' ? 'Rejected' : 'Imekataliwa' },

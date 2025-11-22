@@ -8,10 +8,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/utils/logger";
-import { 
+import {
   calculateKenyanCompatibility,
   calculateKenyanCompatibilityWithWeather,
-  getKenyanSeasonalRecommendation, 
+  getKenyanSeasonalRecommendation,
   calculateKenyanSuccessProbability,
   type SeasonalRecommendation,
   type SuccessProbability
@@ -20,6 +20,23 @@ import { aiRecommendationEngine } from "@/utils/aiRecommendationEngine";
 import type { KenyanTreeSpecies } from "@/data/kenya";
 import { KenyanTreeCard } from "./KenyanTreeCard";
 import { TreeDetailDialog } from "./TreeDetailDialog";
+
+interface UserProfile {
+  county: string;
+  agro_zone: string;
+  conservation_goals: string[];
+  land_size_hectares?: number;
+  latitude?: number;
+  longitude?: number;
+}
+
+interface WeatherData {
+  current: {
+    temperature: number;
+    humidity: number;
+  };
+  estimated_annual_rainfall: number;
+}
 
 interface SwipeInterfaceProps {
   trees: KenyanTreeSpecies[];
@@ -30,13 +47,13 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   const [matchedTreeIds, setMatchedTreeIds] = useState<Set<number>>(new Set());
   const [isAnimating, setIsAnimating] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [compatibilityScore, setCompatibilityScore] = useState(0);
-  const [weatherData, setWeatherData] = useState<any>(null);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [seasonalData, setSeasonalData] = useState<SeasonalRecommendation | null>(null);
   const [successData, setSuccessData] = useState<SuccessProbability | null>(null);
   const [filteredTrees, setFilteredTrees] = useState<KenyanTreeSpecies[]>(trees);
-  const [aiRecommendations, setAiRecommendations] = useState<any[]>([]);
+  const [aiRecommendations, setAiRecommendations] = useState<Record<string, unknown>[]>([]);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const hasShownToast = useRef(false);
   const { user } = useAuth();
@@ -46,79 +63,79 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
 
   // Fetch user profile, weather data, and existing matches
   useEffect(() => {
+    const fetchExistingMatches = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("tree_matches")
+          .select("tree_id")
+          .eq("user_id", user.id);
+
+        if (error) throw error;
+
+        const matchedIds = new Set(data?.map(m => m.tree_id) || []);
+        setMatchedTreeIds(matchedIds);
+      } catch (error) {
+        logger.error("Error fetching matches:", error);
+      }
+    };
+
     fetchProfileAndWeather();
     fetchExistingMatches();
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Generate AI recommendations when profile and weather data are available
   useEffect(() => {
+    const generateAIRecommendations = async () => {
+      if (!user || !userProfile || !weatherData) return;
+
+      try {
+        const recommendations = aiRecommendationEngine.generateRecommendations(
+          user.id,
+          trees,
+          {
+            county: userProfile.county,
+            agroZone: userProfile.agro_zone,
+            conservationGoals: userProfile.conservation_goals || [],
+            landSize: userProfile.land_size_hectares || 1
+          },
+          {
+            temperature: weatherData.current.temperature,
+            humidity: weatherData.current.humidity,
+            rainfall: weatherData.estimated_annual_rainfall
+          }
+        );
+
+        setAiRecommendations(recommendations);
+
+        // Sort trees by AI recommendations
+        const sortedTrees = recommendations
+          .sort((a, b) => b.prediction.compatibilityScore - a.prediction.compatibilityScore)
+          .map(rec => rec.tree);
+
+        setFilteredTrees(sortedTrees);
+
+        toast.success("🤖 AI recommendations generated! Trees are now sorted by compatibility.");
+      } catch (error) {
+        logger.error('Error generating AI recommendations:', error);
+      }
+    };
+
     if (userProfile && weatherData && trees.length > 0) {
       generateAIRecommendations();
     }
-  }, [userProfile, weatherData, trees]);
-
-  const fetchExistingMatches = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from("tree_matches")
-        .select("tree_id")
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-      
-      const matchedIds = new Set(data?.map(m => m.tree_id) || []);
-      setMatchedTreeIds(matchedIds);
-    } catch (error) {
-      logger.error("Error fetching matches:", error);
-    }
-  };
-
-  const generateAIRecommendations = async () => {
-    if (!user || !userProfile || !weatherData) return;
-
-    try {
-      const recommendations = aiRecommendationEngine.generateRecommendations(
-        user.id,
-        trees,
-        {
-          county: userProfile.county,
-          agroZone: userProfile.agro_zone,
-          conservationGoals: userProfile.conservation_goals || [],
-          landSize: userProfile.land_size_hectares || 1
-        },
-        {
-          temperature: weatherData.current.temperature,
-          humidity: weatherData.current.humidity,
-          rainfall: weatherData.estimated_annual_rainfall
-        }
-      );
-
-      setAiRecommendations(recommendations);
-      
-      // Sort trees by AI recommendations
-      const sortedTrees = recommendations
-        .sort((a, b) => b.prediction.compatibilityScore - a.prediction.compatibilityScore)
-        .map(rec => rec.tree);
-      
-      setFilteredTrees(sortedTrees);
-      
-      toast.success("🤖 AI recommendations generated! Trees are now sorted by compatibility.");
-    } catch (error) {
-      logger.error('Error generating AI recommendations:', error);
-    }
-  };
+  }, [userProfile, weatherData, trees, user]);
 
   const fetchProfileAndWeather = async () => {
     if (!user) return;
-    
+
     const { data } = await supabase
       .from("profiles")
       .select("*")
       .eq("user_id", user.id)
       .single();
-    
+
     setUserProfile(data);
 
     // Filter and sort trees based on user's location
@@ -127,17 +144,17 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
         const score = calculateKenyanCompatibility(tree, data);
         return { tree, score };
       });
-      
+
       // Sort by compatibility score (highest first)
       treesWithScores.sort((a, b) => b.score - a.score);
-      
+
       // Filter to only show trees with at least 45% compatibility (lowered threshold)
       const suitable = treesWithScores
         .filter(({ score }) => score >= 45)
         .map(({ tree }) => tree);
-      
+
       logger.log(`📊 Total trees: ${trees.length}, Suitable: ${suitable.length}, Threshold: 45%`);
-      
+
       if (suitable.length > 0) {
         setFilteredTrees(suitable);
         if (!hasShownToast.current) {
@@ -164,14 +181,14 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           longitude: data.longitude,
         },
       });
-      
+
       if (weather) {
         setWeatherData(weather);
       }
     }
   };
 
-  const handleLocationDetected = async (location: { latitude: number; longitude: number; weatherData: any }) => {
+  const handleLocationDetected = async (location: { latitude: number; longitude: number; weatherData: WeatherData }) => {
     // Update user profile with new location
     const { error } = await supabase
       .from("profiles")
@@ -195,13 +212,13 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       const score = weatherData && userProfile.latitude && userProfile.longitude
         ? calculateKenyanCompatibilityWithWeather(currentTree, userProfile, weatherData)
         : calculateKenyanCompatibility(currentTree, userProfile);
-      
+
       setCompatibilityScore(score);
-      
+
       // Calculate Kenya-specific seasonal recommendation
       const seasonal = getKenyanSeasonalRecommendation(currentTree, userProfile, weatherData);
       setSeasonalData(seasonal);
-      
+
       // Calculate Kenya-specific success probability
       const success = calculateKenyanSuccessProbability(currentTree, userProfile, weatherData);
       setSuccessData(success);
@@ -216,7 +233,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       toast.info(`Already matched with ${currentTree.englishName}!`, {
         description: "Check your matches page to see all your trees.",
       });
-      
+
       setTimeout(() => {
         setCurrentIndex(currentIndex + 1);
       }, 300);
@@ -247,7 +264,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
         } else {
           // Only update local state if database insert succeeds
           setMatchedTreeIds(prev => new Set([...prev, currentTree.dbId]));
-          
+
           // Record user behavior for AI learning
           aiRecommendationEngine.recordUserBehavior(
             user.id,
@@ -258,12 +275,12 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
               agroZone: userProfile.agro_zone
             }
           );
-          
+
           toast.success(`🌳 Matched with ${currentTree.englishName}!`, {
             description: `${compatibilityScore}% compatibility - Great choice!`,
           });
         }
-      } catch (error: any) {
+      } catch (error) {
         logger.error("Error saving match:", error);
         toast.error("Failed to save match");
       }
@@ -278,7 +295,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           agroZone: userProfile.agro_zone
         }
       );
-      
+
       toast.info(`Passed on ${currentTree.englishName}`, {
         description: "Keep swiping to find your perfect tree!",
       });
@@ -350,7 +367,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           <span>Progress</span>
           <span aria-live="polite">{currentIndex + 1} / {filteredTrees.length}</span>
         </div>
-        <div 
+        <div
           className="h-2 bg-muted rounded-full overflow-hidden"
           role="progressbar"
           aria-valuenow={currentIndex + 1}
@@ -358,7 +375,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           aria-valuemax={filteredTrees.length}
           aria-label={`Tree selection progress: ${currentIndex + 1} of ${filteredTrees.length}`}
         >
-          <div 
+          <div
             className="h-full bg-primary transition-all duration-300"
             style={{ width: `${((currentIndex + 1) / filteredTrees.length) * 100}%` }}
           />
@@ -369,17 +386,15 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       <div className="relative w-full max-w-sm h-[500px] sm:h-[600px] px-4 sm:px-0">
         {/* Current card */}
         <div
-          className={`absolute inset-0 transition-all duration-300 cursor-pointer ${
-            isAnimating && swipeDirection === 'left' ? 'animate-swipe-left' : ''
-          } ${
-            isAnimating && swipeDirection === 'right' ? 'animate-swipe-right' : ''
-          }`}
+          className={`absolute inset-0 transition-all duration-300 cursor-pointer ${isAnimating && swipeDirection === 'left' ? 'animate-swipe-left' : ''
+            } ${isAnimating && swipeDirection === 'right' ? 'animate-swipe-right' : ''
+            }`}
           role="group"
           aria-label="Current tree card"
           onClick={() => setShowDetailDialog(true)}
         >
-          <KenyanTreeCard 
-            {...currentTree} 
+          <KenyanTreeCard
+            {...currentTree}
             compatibilityScore={compatibilityScore}
             seasonalData={seasonalData || undefined}
             successData={successData || undefined}
@@ -411,7 +426,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
         >
           <X className="w-7 h-7 sm:w-8 sm:h-8 text-destructive" aria-hidden="true" />
         </Button>
-        
+
         <div className="text-center min-w-[80px] sm:min-w-[100px]">
           <p className="text-xs sm:text-sm text-muted-foreground" aria-live="polite">
             {matchedTreeIds.size} tree{matchedTreeIds.size !== 1 ? 's' : ''} matched

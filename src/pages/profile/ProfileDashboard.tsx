@@ -7,6 +7,15 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, CheckCircle2, Clock, TrendingUp, Wallet, Wind } from 'lucide-react';
 
+interface Activity {
+  id: string;
+  status: 'verified' | 'pending' | 'rejected';
+  created_at: string;
+  tree_name: string;
+  county: string;
+  reward_amount: number;
+}
+
 const ProfileDashboard = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
@@ -19,7 +28,7 @@ const ProfileDashboard = () => {
     carbonImpact: 0,
     survivalRate: 0,
   });
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,7 +45,7 @@ const ProfileDashboard = () => {
         const verified = verifications.filter(v => v.status === 'verified');
         const pending = verifications.filter(v => v.status === 'pending');
         const totalRewards = verified.reduce((sum, v) => sum + (v.reward_amount || 0), 0);
-        
+
         setStats({
           totalTrees: verifications.length,
           verifiedCount: verified.length,

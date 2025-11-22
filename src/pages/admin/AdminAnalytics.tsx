@@ -13,10 +13,24 @@ import {
 import { toast } from 'sonner';
 import { logger } from '@/utils/logger';
 
+interface DashboardStats {
+  total_approved: number;
+  total_rejected: number;
+  approval_rate: number;
+}
+
+interface CountyStats {
+  county: string;
+  verified: number;
+  pending: number;
+  rejected: number;
+  total: number;
+}
+
 export default function AdminAnalytics() {
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<any>(null);
-  const [countyData, setCountyData] = useState<any[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [countyData, setCountyData] = useState<CountyStats[]>([]);
 
   useEffect(() => {
     fetchAnalytics();
@@ -28,18 +42,18 @@ export default function AdminAnalytics() {
       const { data: statsData, error: statsError } = await supabase.rpc('get_admin_stats');
       if (statsError) throw statsError;
       if (statsData && statsData.length > 0) {
-        setStats(statsData[0]);
+        setStats(statsData[0] as unknown as DashboardStats);
       }
 
       // Fetch county breakdown
       const { data: verifications, error: verifError } = await supabase
         .from('planting_verifications')
         .select('county, status');
-      
+
       if (verifError) throw verifError;
 
       // Group by county
-      const grouped = verifications?.reduce((acc: any, item) => {
+      const grouped = verifications?.reduce((acc: Record<string, { verified: number; pending: number; rejected: number }>, item) => {
         if (!acc[item.county]) {
           acc[item.county] = { verified: 0, pending: 0, rejected: 0 };
         }
@@ -49,11 +63,14 @@ export default function AdminAnalytics() {
         return acc;
       }, {});
 
-      const countyArray = Object.entries(grouped || {}).map(([county, data]: any) => ({
-        county,
-        ...data,
-        total: data.verified + data.pending + data.rejected
-      })).sort((a, b) => b.total - a.total);
+      const countyArray = Object.entries(grouped || {}).map(([county, data]) => {
+        const stats = data as { verified: number; pending: number; rejected: number };
+        return {
+          county,
+          ...stats,
+          total: stats.verified + stats.pending + stats.rejected
+        };
+      }).sort((a, b) => b.total - a.total);
 
       setCountyData(countyArray);
     } catch (error) {

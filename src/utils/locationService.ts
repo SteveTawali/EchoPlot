@@ -9,7 +9,7 @@ export interface LocationData {
 }
 
 export interface CachedLocationData extends LocationData {
-  weatherData?: any;
+  weatherData?: Record<string, unknown>;
 }
 
 export interface ClimateData {
@@ -29,22 +29,22 @@ export const getCachedLocation = (): CachedLocationData | null => {
   try {
     const cached = localStorage.getItem(LOCATION_CACHE_KEY);
     if (!cached) return null;
-    
+
     const data = JSON.parse(cached) as CachedLocationData;
     const isExpired = Date.now() - data.timestamp > CACHE_EXPIRY_MS;
-    
+
     if (isExpired) {
       localStorage.removeItem(LOCATION_CACHE_KEY);
       return null;
     }
-    
+
     return data;
   } catch {
     return null;
   }
 };
 
-export const cacheLocation = (location: LocationData, weatherData?: any): void => {
+export const cacheLocation = (location: LocationData, weatherData?: Record<string, unknown>): void => {
   try {
     const cacheData: CachedLocationData = {
       ...location,
@@ -79,7 +79,7 @@ export const requestLocationPermission = (): Promise<LocationData> => {
       },
       (error) => {
         let errorMessage = 'Unable to retrieve your location';
-        
+
         switch (error.code) {
           case error.PERMISSION_DENIED:
             errorMessage = 'Location permission denied. Trying IP-based location...';
@@ -91,7 +91,7 @@ export const requestLocationPermission = (): Promise<LocationData> => {
             errorMessage = 'Location request timed out.';
             break;
         }
-        
+
         reject(new Error(errorMessage));
       },
       {
@@ -108,11 +108,11 @@ export const getLocationFromIP = async (): Promise<LocationData> => {
   try {
     const response = await fetch('https://ipapi.co/json/');
     const data = await response.json();
-    
+
     if (!data.latitude || !data.longitude) {
       throw new Error('Unable to determine location from IP');
     }
-    
+
     const locationData: LocationData = {
       latitude: data.latitude,
       longitude: data.longitude,
@@ -120,7 +120,7 @@ export const getLocationFromIP = async (): Promise<LocationData> => {
       source: 'ip',
       timestamp: Date.now(),
     };
-    
+
     cacheLocation(locationData);
     return locationData;
   } catch (error) {
@@ -136,14 +136,14 @@ export const detectLocation = async (): Promise<LocationData> => {
     logger.log('Using cached location');
     return cached;
   }
-  
+
   // 2. Try GPS
   try {
     logger.log('Attempting GPS location...');
     return await requestLocationPermission();
   } catch (gpsError) {
     logger.log('GPS failed, falling back to IP location');
-    
+
     // 3. Fallback to IP-based location
     try {
       return await getLocationFromIP();
@@ -155,22 +155,22 @@ export const detectLocation = async (): Promise<LocationData> => {
 
 export const determineClimateZone = (latitude: number, temperature: number): ClimateData['zone'] => {
   const absLat = Math.abs(latitude);
-  
+
   // Mediterranean climate (30-45 degrees with warm dry summers)
   if (absLat >= 30 && absLat <= 45 && temperature > 15) {
     return 'mediterranean';
   }
-  
+
   // Tropical (within 23.5 degrees of equator)
   if (absLat < 23.5) {
     return 'tropical';
   }
-  
+
   // Cold (above 60 degrees or very cold temps)
   if (absLat > 60 || temperature < 5) {
     return 'cold';
   }
-  
+
   // Temperate (everything else)
   return 'temperate';
 };
@@ -178,27 +178,27 @@ export const determineClimateZone = (latitude: number, temperature: number): Cli
 export const determineSoilType = (humidity: number, rainfall: number): 'clay' | 'sandy' | 'loamy' | 'silty' | 'peaty' | 'chalky' => {
   // This is a simplified estimation based on climate data
   // In a production app, you'd want to use actual soil data APIs or databases
-  
+
   if (rainfall > 1000 && humidity > 70) {
     return 'peaty'; // High rainfall and humidity suggests organic-rich soil
   }
-  
+
   if (rainfall < 500 && humidity < 50) {
     return 'sandy'; // Low rainfall and humidity suggests sandy soil
   }
-  
+
   if (humidity > 80) {
     return 'clay'; // High humidity often correlates with clay-heavy soils
   }
-  
+
   if (rainfall > 800 && rainfall < 1000) {
     return 'silty'; // Moderate-high rainfall suggests silty soil
   }
-  
+
   if (rainfall < 300) {
     return 'chalky'; // Very low rainfall suggests chalky/alkaline soil
   }
-  
+
   return 'loamy'; // Default to loamy as it's most common
 };
 
@@ -206,10 +206,10 @@ export const determineSoilType = (humidity: number, rainfall: number): 'clay' | 
 export const getCurrentSeason = (latitude: number): { season: string; optimalPlantingMonths: number[] } => {
   const month = new Date().getMonth(); // 0-11
   const isNorthern = latitude >= 0;
-  
+
   let season: string;
   let optimalPlantingMonths: number[];
-  
+
   if (isNorthern) {
     // Northern hemisphere
     if (month >= 2 && month <= 4) {
@@ -241,7 +241,7 @@ export const getCurrentSeason = (latitude: number): { season: string; optimalPla
       optimalPlantingMonths = [2, 3];
     }
   }
-  
+
   return { season, optimalPlantingMonths };
 };
 

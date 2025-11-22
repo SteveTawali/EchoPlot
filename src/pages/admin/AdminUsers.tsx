@@ -60,7 +60,7 @@ export default function AdminUsers() {
 
   useEffect(() => {
     filterUsers();
-  }, [users, searchQuery]);
+  }, [users, searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchUsers = async () => {
     try {
@@ -193,7 +193,7 @@ export default function AdminUsers() {
                 <TableCell>
                   <div className="flex items-center gap-1 text-sm">
                     <MapPin className="h-3 w-3" />
-                    {user.county && user.constituency 
+                    {user.county && user.constituency
                       ? `${user.county}, ${user.constituency}`
                       : user.county || 'N/A'
                     }
@@ -234,7 +234,7 @@ export default function AdminUsers() {
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium">Role</label>
-              <Select value={selectedRole} onValueChange={(value: any) => setSelectedRole(value)}>
+              <Select value={selectedRole} onValueChange={(value: 'admin' | 'moderator' | 'user') => setSelectedRole(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

@@ -24,7 +24,7 @@ interface DashboardStats {
   total_approved: number;
   total_rejected: number;
   approval_rate: number;
-  pending_by_county: any;
+  pending_by_county: Record<string, number>;
 }
 
 interface PlantingSubmission {
@@ -64,15 +64,15 @@ export default function AdminOverview() {
       const { data: statsData, error: statsError } = await supabase.rpc('get_admin_stats');
       if (statsError) throw statsError;
       if (statsData && statsData.length > 0) {
-        setStats(statsData[0]);
+        setStats(statsData[0] as unknown as DashboardStats);
       }
 
       // Fetch pending verifications using the RPC function
       const { data: queueData, error: queueError } = await supabase.rpc('get_verification_queue');
       if (queueError) throw queueError;
-      
+
       // Filter for pending only
-      const pending = (queueData || []).filter((item: any) => item.status === 'pending');
+      const pending = (queueData || []).filter((item: PlantingSubmission) => item.status === 'pending');
       setPendingSubmissions(pending);
     } catch (error) {
       logger.error('Error fetching dashboard data:', error);
@@ -98,7 +98,7 @@ export default function AdminOverview() {
       if (error) throw error;
 
       toast.success('Planting verified! Payment will be processed.');
-      
+
       // TODO: Trigger M-Pesa payment via edge function
       // await supabase.functions.invoke('process-mpesa-payment', {
       //   body: { verificationId: submission.id, phone: submission.submission_phone }
@@ -141,7 +141,7 @@ export default function AdminOverview() {
       if (error) throw error;
 
       toast.success('Submission rejected');
-      
+
       // TODO: Send SMS notification
       // await supabase.functions.invoke('send-sms-notification', {
       //   body: { phone: selectedSubmission.submission_phone, message: `Your planting submission was rejected: ${rejectionReason}` }
@@ -240,7 +240,7 @@ export default function AdminOverview() {
       {/* Pending Submissions Grid */}
       <div className="space-y-3 md:space-y-4">
         <h2 className="text-lg md:text-xl font-semibold">Pending Submissions ({pendingSubmissions.length})</h2>
-        
+
         {pendingSubmissions.length === 0 ? (
           <Card className="p-8 text-center">
             <CheckCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -270,7 +270,7 @@ export default function AdminOverview() {
                       <h3 className="font-semibold text-lg">{submission.tree_name}</h3>
                       <p className="text-sm text-muted-foreground">by {submission.full_name}</p>
                     </div>
-                    
+
                     <div className="space-y-2 text-sm">
                       <div className="flex items-start gap-2">
                         <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
@@ -289,7 +289,7 @@ export default function AdminOverview() {
                           )}
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
                         <span>Planted: {new Date(submission.planting_date).toLocaleDateString()}</span>

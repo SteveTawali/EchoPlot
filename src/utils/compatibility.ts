@@ -53,7 +53,7 @@ export const calculateCompatibilityWithWeather = (
     const tempScore = calculateTemperatureMatch(tree, weatherData.current.temperature);
     const humidityScore = calculateHumidityMatch(tree, weatherData.current.humidity);
     const rainfallScore = calculateRainfallMatch(tree, weatherData.estimated_annual_rainfall);
-    
+
     const locationBonus = Math.round((tempScore + humidityScore + rainfallScore) / 3);
     score = Math.min(100, score + locationBonus);
   }
@@ -73,13 +73,13 @@ const calculateTemperatureMatch = (tree: Tree, temperature: number): number => {
   };
 
   const range = tempRanges[tree.growthRate.toLowerCase()] || tempRanges.moderate;
-  
+
   if (temperature >= range.min && temperature <= range.max) {
     return 5; // Perfect temperature
   } else if (temperature >= range.min - 5 && temperature <= range.max + 5) {
     return 3; // Acceptable temperature
   }
-  
+
   return 0;
 };
 
@@ -102,11 +102,11 @@ const calculateHumidityMatch = (tree: Tree, humidity: number): number => {
     .reduce((a, b) => (a + b) / 2, 60);
 
   const diff = Math.abs(humidity - preferredHumidity);
-  
+
   if (diff < 10) return 5;
   if (diff < 20) return 3;
   if (diff < 30) return 1;
-  
+
   return 0;
 };
 
@@ -125,7 +125,7 @@ const calculateRainfallMatch = (tree: Tree, annualRainfall: number): number => {
   };
 
   const climateZones = tree.requirements.suitableClimates;
-  
+
   for (const zone of climateZones) {
     const range = rainfallRanges[zone];
     if (range && annualRainfall >= range.min && annualRainfall <= range.max) {
@@ -140,7 +140,7 @@ const calculateRainfallMatch = (tree: Tree, annualRainfall: number): number => {
       return 2;
     }
   }
-  
+
   return 0;
 };
 
@@ -157,7 +157,7 @@ export const calculateCompatibility = (
 
   // Soil type compatibility (25 points)
   maxScore += 25;
-  if (profile.soil_type && tree.requirements.preferredSoils.includes(profile.soil_type as any)) {
+  if (profile.soil_type && tree.requirements.preferredSoils.includes(profile.soil_type as "clay" | "sandy" | "loamy" | "silty" | "peaty" | "chalky")) {
     score += 25;
   } else if (profile.soil_type) {
     score += 10; // Partial credit for having soil type
@@ -165,7 +165,7 @@ export const calculateCompatibility = (
 
   // Climate compatibility (30 points)
   maxScore += 30;
-  if (profile.climate_zone && tree.requirements.suitableClimates.includes(profile.climate_zone as any)) {
+  if (profile.climate_zone && tree.requirements.suitableClimates.includes(profile.climate_zone as "tropical" | "subtropical" | "temperate" | "mediterranean" | "cold" | "arid")) {
     score += 30;
   } else if (profile.climate_zone) {
     score += 10; // Partial credit
@@ -229,27 +229,27 @@ export const getSeasonalRecommendation = (
 ): SeasonalRecommendation => {
   const latitude = profile.latitude || 0;
   const { season, optimalPlantingMonths } = getCurrentSeason(latitude);
-  
+
   const currentMonth = new Date().getMonth();
   const canPlantNow = optimalPlantingMonths.includes(currentMonth);
-  
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                      'July', 'August', 'September', 'October', 'November', 'December'];
-  
+
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+
   const optimalMonthNames = optimalPlantingMonths.map(m => monthNames[m]);
-  
+
   let currentSeasonRating: 'optimal' | 'acceptable' | 'poor' = 'poor';
   let seasonalAdvice = '';
-  
+
   if (canPlantNow) {
     currentSeasonRating = 'optimal';
     seasonalAdvice = `Perfect time to plant! ${season} is ideal for establishing ${tree.name}.`;
   } else {
     const nextOptimalMonth = optimalPlantingMonths.find(m => m > currentMonth) || optimalPlantingMonths[0];
-    const monthsUntilOptimal = nextOptimalMonth > currentMonth 
-      ? nextOptimalMonth - currentMonth 
+    const monthsUntilOptimal = nextOptimalMonth > currentMonth
+      ? nextOptimalMonth - currentMonth
       : (12 - currentMonth) + nextOptimalMonth;
-    
+
     if (monthsUntilOptimal <= 2) {
       currentSeasonRating = 'acceptable';
       seasonalAdvice = `Wait ${monthsUntilOptimal} month${monthsUntilOptimal > 1 ? 's' : ''} for optimal planting conditions.`;
@@ -258,10 +258,10 @@ export const getSeasonalRecommendation = (
       seasonalAdvice = `Best to wait for ${optimalMonthNames[0]}. Use this time to prepare the soil.`;
     }
   }
-  
+
   const nextOptimal = optimalPlantingMonths.find(m => m > currentMonth) || optimalPlantingMonths[0];
   const nextOptimalDate = `${monthNames[nextOptimal]} 1, ${new Date().getFullYear() + (nextOptimal <= currentMonth ? 1 : 0)}`;
-  
+
   return {
     canPlantNow,
     optimalMonths: optimalMonthNames,
@@ -285,25 +285,25 @@ export const calculateSuccessProbability = (
     season: 0,
     weather: 0,
   };
-  
+
   const riskFactors: string[] = [];
-  
+
   // Climate factor (0-100)
-  if (profile.climate_zone && tree.requirements.suitableClimates.includes(profile.climate_zone as any)) {
+  if (profile.climate_zone && tree.requirements.suitableClimates.includes(profile.climate_zone as "tropical" | "subtropical" | "temperate" | "mediterranean" | "cold" | "arid")) {
     factors.climate = 100;
   } else if (profile.climate_zone) {
     factors.climate = 40;
     riskFactors.push(`${tree.name} prefers ${tree.requirements.suitableClimates.join(', ')} climates`);
   }
-  
+
   // Soil factor (0-100)
-  if (profile.soil_type && tree.requirements.preferredSoils.includes(profile.soil_type as any)) {
+  if (profile.soil_type && tree.requirements.preferredSoils.includes(profile.soil_type as "clay" | "sandy" | "loamy" | "silty" | "peaty" | "chalky")) {
     factors.soil = 100;
   } else if (profile.soil_type) {
     factors.soil = 50;
     riskFactors.push(`Soil type may need amendment for optimal growth`);
   }
-  
+
   // Season factor (0-100)
   const seasonal = getSeasonalRecommendation(tree, profile, weatherData);
   if (seasonal.currentSeasonRating === 'optimal') {
@@ -314,32 +314,32 @@ export const calculateSuccessProbability = (
     factors.season = 30;
     riskFactors.push(`Planting outside optimal season (best: ${seasonal.optimalMonths.join(', ')})`);
   }
-  
+
   // Weather factor (0-100) - if available
   if (weatherData && profile.latitude) {
     const tempScore = calculateTemperatureMatch(tree, weatherData.current.temperature) * 20;
     const humidityScore = calculateHumidityMatch(tree, weatherData.current.humidity) * 20;
     const rainfallScore = calculateRainfallMatch(tree, weatherData.estimated_annual_rainfall) * 20;
     factors.weather = tempScore + humidityScore + rainfallScore;
-    
+
     if (factors.weather < 60) {
       riskFactors.push(`Current weather conditions are less than ideal`);
     }
   } else {
     factors.weather = 70; // Default moderate score without weather data
   }
-  
+
   // Calculate overall probability
   const probability = Math.round(
     (factors.climate * 0.35 + factors.soil * 0.25 + factors.season * 0.25 + factors.weather * 0.15)
   );
-  
+
   let rating: SuccessProbability['rating'];
   if (probability >= 85) rating = 'very-high';
   else if (probability >= 70) rating = 'high';
   else if (probability >= 50) rating = 'moderate';
   else rating = 'low';
-  
+
   return {
     probability,
     rating,

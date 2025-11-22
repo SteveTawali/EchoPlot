@@ -49,7 +49,7 @@ const Auth = () => {
           setLoading(false);
           return;
         }
-        
+
         const { error } = await signUp(email, password, fullName);
         if (error) {
           if (error.message.includes("already registered")) {
@@ -62,7 +62,7 @@ const Auth = () => {
           navigate("/onboarding");
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       toast.error(error.message || "An error occurred");
     } finally {
       setLoading(false);

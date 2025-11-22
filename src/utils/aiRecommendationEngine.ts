@@ -33,20 +33,20 @@ interface MLFeatures {
   agroZone: string;
   conservationGoals: string[];
   landSize: number;
-  
+
   // Tree features
   treeId: string;
   price: number;
   uses: string[];
   suitableCounties: string[];
   agroZones: string[];
-  
+
   // Environmental features
   temperature: number;
   humidity: number;
   rainfall: number;
   season: string;
-  
+
   // Historical success features
   successRateInCounty: number;
   successRateInAgroZone: number;
@@ -67,7 +67,7 @@ interface MLPrediction {
 export class AIRecommendationEngine {
   private userBehaviors: Map<string, UserBehavior> = new Map();
   private modelWeights: Map<string, number> = new Map();
-  
+
   constructor() {
     this.initializeModelWeights();
   }
@@ -169,7 +169,7 @@ export class AIRecommendationEngine {
     for (const tree of trees) {
       const features = this.extractFeatures(tree, userProfile, userBehavior, weatherData);
       const prediction = this.predictCompatibility(features);
-      
+
       recommendations.push({ tree, prediction });
     }
 
@@ -182,9 +182,18 @@ export class AIRecommendationEngine {
    */
   private extractFeatures(
     tree: KenyanTreeSpecies,
-    userProfile: any,
+    userProfile: {
+      county: string;
+      agroZone: string;
+      conservationGoals: string[];
+      landSize: number;
+    },
     userBehavior: UserBehavior | undefined,
-    weatherData?: any
+    weatherData?: {
+      temperature: number;
+      humidity: number;
+      rainfall: number;
+    }
   ): MLFeatures {
     return {
       county: userProfile.county,
@@ -224,7 +233,7 @@ export class AIRecommendationEngine {
     compatibilityScore += agroZoneMatch * this.modelWeights.get('agro_zone_match')! * 100;
 
     // Conservation goals alignment
-    const goalsMatch = features.conservationGoals.filter(goal => 
+    const goalsMatch = features.conservationGoals.filter(goal =>
       features.uses.includes(goal)
     ).length / Math.max(features.conservationGoals.length, 1);
     compatibilityScore += goalsMatch * this.modelWeights.get('conservation_goals')! * 100;
@@ -308,7 +317,7 @@ export class AIRecommendationEngine {
 
       // Check if users have similar preferences
       const preferenceSimilarity = this.calculatePreferenceSimilarity(userBehavior, otherBehavior);
-      
+
       if (preferenceSimilarity > 0.6) {
         totalSimilarUsers++;
         const likedThisTree = otherBehavior.swipedTrees.some(
@@ -327,10 +336,10 @@ export class AIRecommendationEngine {
   private calculatePreferenceSimilarity(user1: UserBehavior, user2: UserBehavior): number {
     const goals1 = new Set(user1.preferences.conservationGoals);
     const goals2 = new Set(user2.preferences.conservationGoals);
-    
+
     const intersection = new Set([...goals1].filter(x => goals2.has(x)));
     const union = new Set([...goals1, ...goals2]);
-    
+
     return union.size > 0 ? intersection.size / union.size : 0;
   }
 
@@ -340,10 +349,10 @@ export class AIRecommendationEngine {
   private calculateEnvironmentalScore(features: MLFeatures): number {
     // Temperature compatibility
     const tempScore = this.getTemperatureScore(features.temperature, features.agroZone);
-    
+
     // Rainfall compatibility
     const rainfallScore = this.getRainfallScore(features.rainfall, features.agroZone);
-    
+
     return (tempScore + rainfallScore) / 2;
   }
 
@@ -358,7 +367,7 @@ export class AIRecommendationEngine {
     else if (features.price <= 500) engagement += 0.1;
 
     // Use case alignment
-    const useAlignment = features.conservationGoals.filter(goal => 
+    const useAlignment = features.conservationGoals.filter(goal =>
       features.uses.includes(goal)
     ).length / Math.max(features.conservationGoals.length, 1);
     engagement += useAlignment * 0.3;
@@ -436,9 +445,9 @@ export class AIRecommendationEngine {
 
     const zoneType = agroZone.slice(0, 2);
     const range = tempRanges[zoneType];
-    
+
     if (!range) return 0.5;
-    
+
     if (temperature >= range.min && temperature <= range.max) return 1.0;
     if (temperature >= range.min - 5 && temperature <= range.max + 5) return 0.7;
     return 0.3;
@@ -459,9 +468,9 @@ export class AIRecommendationEngine {
 
     const zoneType = agroZone.slice(0, 2);
     const range = rainfallRanges[zoneType];
-    
+
     if (!range) return 0.5;
-    
+
     if (rainfall >= range.min && rainfall <= range.max) return 1.0;
     if (rainfall >= range.min * 0.7 && rainfall <= range.max * 1.3) return 0.7;
     return 0.3;
@@ -485,10 +494,10 @@ export class AIRecommendationEngine {
     for (const behavior of this.userBehaviors.values()) {
       totalInteractions += behavior.swipedTrees.length;
       totalPlantings += behavior.successfulPlantings.length;
-      
+
       for (const planting of behavior.successfulPlantings) {
         if (planting.survived) successfulPlantings++;
-        
+
         const current = treeSuccessRates.get(planting.treeId) || { total: 0, successful: 0 };
         current.total++;
         if (planting.survived) current.successful++;
@@ -497,7 +506,7 @@ export class AIRecommendationEngine {
     }
 
     const averageSuccessRate = totalPlantings > 0 ? successfulPlantings / totalPlantings : 0;
-    
+
     const topPerformingTrees = Array.from(treeSuccessRates.entries())
       .map(([treeId, stats]) => ({
         treeId,

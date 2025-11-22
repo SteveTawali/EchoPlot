@@ -6,8 +6,16 @@ import { MapPin, Loader2, CheckCircle, AlertCircle, MapPinned } from "lucide-rea
 import { detectLocation, getLocationAccuracyRating, type LocationData } from "@/utils/locationService";
 import { supabase } from "@/integrations/supabase/client";
 
+interface WeatherData {
+  current: {
+    temperature: number;
+    humidity: number;
+  };
+  estimated_annual_rainfall: number;
+}
+
 interface LocationDetectorProps {
-  onLocationDetected?: (location: { latitude: number; longitude: number; weatherData: any }) => void;
+  onLocationDetected?: (location: { latitude: number; longitude: number; weatherData: WeatherData }) => void;
   className?: string;
 }
 
@@ -20,13 +28,13 @@ export const LocationDetector = ({ onLocationDetected, className }: LocationDete
   const handleDetectLocation = async () => {
     setDetecting(true);
     setStatus('idle');
-    
+
     try {
       // Use smart detection with GPS -> IP fallback
       const location = await detectLocation();
-      
+
       const accuracyInfo = getLocationAccuracyRating(location.accuracy, location.source);
-      
+
       // Fetch weather data
       const { data: weatherData, error } = await supabase.functions.invoke('get-weather-data', {
         body: {
@@ -39,13 +47,13 @@ export const LocationDetector = ({ onLocationDetected, className }: LocationDete
 
       setStatus('success');
       setLocationData(location);
-      
-      const sourceLabel = location.source === 'gps' ? 'GPS' : 
-                         location.source === 'ip' ? 'IP address' : 
-                         location.source === 'cached' ? 'cached data' : 'manual entry';
-      
+
+      const sourceLabel = location.source === 'gps' ? 'GPS' :
+        location.source === 'ip' ? 'IP address' :
+          location.source === 'cached' ? 'cached data' : 'manual entry';
+
       setMessage(`Location detected via ${sourceLabel}: ${weatherData.location.name}, ${weatherData.location.country}`);
-      
+
       if (onLocationDetected) {
         onLocationDetected({
           latitude: location.latitude,
@@ -53,7 +61,7 @@ export const LocationDetector = ({ onLocationDetected, className }: LocationDete
           weatherData,
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       setStatus('error');
       setMessage(error.message || 'Failed to detect location. Please try manual entry.');
     } finally {

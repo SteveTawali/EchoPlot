@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Leaf, MapPin, TrendingUp, Calendar, TreeDeciduous } from "lucide-react";
 
-const PlantingMapLazy = lazy(() => 
+const PlantingMapLazy = lazy(() =>
   import("@/components/PlantingMap").then((module) => ({
     default: module.PlantingMap
   }))
@@ -44,52 +44,52 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!user) return;
+
+      try {
+        // Fetch matches
+        const { data: matches } = await supabase
+          .from("tree_matches")
+          .select("*")
+          .eq("user_id", user.id);
+
+        // Fetch verifications
+        const { data: verifications } = await supabase
+          .from("planting_verifications")
+          .select("*")
+          .eq("user_id", user.id);
+
+        const verified = verifications?.filter((v) => v.status === "verified") || [];
+        const pending = verifications?.filter((v) => v.status === "pending") || [];
+
+        // Get locations with coordinates
+        const locationsWithCoords =
+          verifications?.filter(
+            (v) => v.latitude !== null && v.longitude !== null && v.status === "verified"
+          ) || [];
+
+        // Estimate carbon sequestration (rough estimate: 20kg CO2/tree/year)
+        const carbonEstimate = verified.length * 20;
+
+        setStats({
+          totalMatches: matches?.length || 0,
+          totalVerifications: verifications?.length || 0,
+          verifiedPlantings: verified.length,
+          pendingVerifications: pending.length,
+          totalCarbonEstimate: carbonEstimate,
+        });
+
+        setLocations(locationsWithCoords as PlantingLocation[]);
+      } catch (error) {
+        logger.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchDashboardData();
   }, [user]);
-
-  const fetchDashboardData = async () => {
-    if (!user) return;
-
-    try {
-      // Fetch matches
-      const { data: matches } = await supabase
-        .from("tree_matches")
-        .select("*")
-        .eq("user_id", user.id);
-
-      // Fetch verifications
-      const { data: verifications } = await supabase
-        .from("planting_verifications")
-        .select("*")
-        .eq("user_id", user.id);
-
-      const verified = verifications?.filter((v) => v.status === "verified") || [];
-      const pending = verifications?.filter((v) => v.status === "pending") || [];
-
-      // Get locations with coordinates
-      const locationsWithCoords =
-        verifications?.filter(
-          (v) => v.latitude !== null && v.longitude !== null && v.status === "verified"
-        ) || [];
-
-      // Estimate carbon sequestration (rough estimate: 20kg CO2/tree/year)
-      const carbonEstimate = verified.length * 20;
-
-      setStats({
-        totalMatches: matches?.length || 0,
-        totalVerifications: verifications?.length || 0,
-        verifiedPlantings: verified.length,
-        pendingVerifications: pending.length,
-        totalCarbonEstimate: carbonEstimate,
-      });
-
-      setLocations(locationsWithCoords as PlantingLocation[]);
-    } catch (error) {
-      logger.error("Error fetching dashboard data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (

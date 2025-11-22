@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,18 +30,11 @@ const Verifications = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
+
   const matchId = searchParams.get('matchId');
   const treeName = searchParams.get('treeName');
 
-  useEffect(() => {
-    if (matchId && treeName) {
-      setShowUpload(true);
-    }
-    fetchVerifications();
-  }, [user]);
-
-  const fetchVerifications = async () => {
+  const fetchVerifications = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -53,13 +46,20 @@ const Verifications = () => {
 
       if (error) throw error;
       setVerifications(data || []);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Failed to load verifications");
       logger.error(error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (matchId && treeName) {
+      setShowUpload(true);
+    }
+    fetchVerifications();
+  }, [matchId, treeName, fetchVerifications]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {

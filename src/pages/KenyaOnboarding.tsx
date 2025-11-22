@@ -64,17 +64,17 @@ export default function KenyaOnboarding() {
     let detectedAgroZone = "";
     let detectedClimate: ClimateZone | null = null;
     let detectedSoil: SoilType | null = null;
-    
+
     try {
       // Step 1: Get GPS location (CRITICAL - must work)
       logger.log('Starting location detection...');
       const location = await detectLocation();
       logger.log('GPS location obtained:', { lat: location.latitude, lng: location.longitude });
-      
+
       // Step 2: Determine agro-zone from coordinates (CRITICAL - always works)
       detectedAgroZone = determineAgroZone(location.latitude, location.longitude);
       logger.log('Agro-zone determined:', detectedAgroZone);
-      
+
       // Step 3: Get county via reverse geocoding (IMPORTANT - try but don't fail)
       try {
         logger.log('Attempting reverse geocoding...');
@@ -93,15 +93,19 @@ export default function KenyaOnboarding() {
         const { data, error } = await supabase.functions.invoke('get-weather-data', {
           body: { latitude: location.latitude, longitude: location.longitude }
         });
-        
+
         if (error) {
           logger.error('Weather API returned error:', error);
+          // Check if it's a CORS or network error
+          if (error.message?.includes('Failed to send') || error.message?.includes('fetch')) {
+            logger.warn('Edge function request failed - may be CORS or network issue');
+          }
           throw error;
         }
-        
+
         if (data?.current) {
           logger.log('Weather data received successfully');
-          
+
           // Determine climate and soil from weather data
           detectedClimate = determineClimateZone(location.latitude, data.current.temperature) as ClimateZone;
           detectedSoil = determineSoilType(data.current.humidity, data.estimated_annual_rainfall) as SoilType;
@@ -132,33 +136,33 @@ export default function KenyaOnboarding() {
       const successParts: string[] = [];
       if (detectedCounty) successParts.push(detectedCounty);
       if (detectedAgroZone) successParts.push(`Zone: ${detectedAgroZone}`);
-      
+
       const descriptionParts: string[] = [];
       if (detectedClimate) descriptionParts.push(`Climate: ${detectedClimate}`);
       if (detectedSoil) descriptionParts.push(`Soil: ${detectedSoil}`);
-      
+
       toast.success(
-        successParts.length > 0 
-          ? `Location detected: ${successParts.join(', ')}` 
+        successParts.length > 0
+          ? `Location detected: ${successParts.join(', ')}`
           : 'Location coordinates detected',
         {
-          description: descriptionParts.length > 0 
+          description: descriptionParts.length > 0
             ? descriptionParts.join(', ')
-            : detectedAgroZone 
-              ? `Agro-zone: ${detectedAgroZone}` 
+            : detectedAgroZone
+              ? `Agro-zone: ${detectedAgroZone}`
               : undefined,
         }
       );
-      
+
       logger.log('Location detection completed successfully');
     } catch (error: unknown) {
       logger.error('Location detection failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
+
       // Provide helpful error message
-      let userMessage = 'Location detection failed';
+      const userMessage = 'Location detection failed';
       let userDescription = errorMessage;
-      
+
       if (errorMessage.includes('permission')) {
         userDescription = 'Please allow location access in your browser settings';
       } else if (errorMessage.includes('timeout')) {
@@ -166,7 +170,7 @@ export default function KenyaOnboarding() {
       } else if (errorMessage.includes('unavailable')) {
         userDescription = 'Location services unavailable. Please enter your location manually.';
       }
-      
+
       toast.error(userMessage, {
         description: userDescription,
       });
@@ -207,7 +211,7 @@ export default function KenyaOnboarding() {
 
   const handleSubmit = async () => {
     setLoading(true);
-    
+
     // Validate all input using Zod schema
     const landSizeNum = Number.parseFloat(formData.landSize);
     if (Number.isNaN(landSizeNum) || landSizeNum <= 0) {
@@ -262,13 +266,13 @@ export default function KenyaOnboarding() {
       if (error) throw error;
 
       toast.success(language === 'sw' ? "Umekamilisha! Hebu tuone miti inayofaa" : "Profile completed! Let's find your perfect trees.");
-      
+
       // Small delay to ensure database update propagates
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       // Force page reload to ensure ProtectedRoute sees updated data
       globalThis.location.href = "/";
-    } catch (error: any) {
+    } catch (error) {
       toast.error(error.message || "Failed to save profile");
     } finally {
       setLoading(false);
@@ -337,10 +341,10 @@ export default function KenyaOnboarding() {
               <Label className="text-lg block mb-4">
                 {language === 'sw' ? 'Wapi unaishi?' : 'Where are you located?'}
               </Label>
-              
+
               <div>
                 <Label>{language === 'sw' ? 'Kaunti' : 'County'}</Label>
-                <Select value={formData.county} onValueChange={(value) => setFormData({...formData, county: value})}>
+                <Select value={formData.county} onValueChange={(value) => setFormData({ ...formData, county: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder={language === 'sw' ? 'Chagua kaunti' : 'Select county'} />
                   </SelectTrigger>
@@ -360,7 +364,7 @@ export default function KenyaOnboarding() {
                   type="tel"
                   placeholder="0712345678"
                   value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   {language === 'sw' ? 'Format: 0712345678 au +254712345678' : 'Format: 0712345678 or +254712345678'}
@@ -372,13 +376,13 @@ export default function KenyaOnboarding() {
                 <Input
                   placeholder={language === 'sw' ? 'Ingiza kata' : 'Enter constituency'}
                   value={formData.constituency}
-                  onChange={(e) => setFormData({...formData, constituency: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, constituency: e.target.value })}
                 />
               </div>
 
               <div>
                 <Label>{language === 'sw' ? 'Eneo la Kilimo-Ekolojia' : 'Agro-Ecological Zone'} *</Label>
-                <Select value={formData.agroZone} onValueChange={(value) => setFormData({...formData, agroZone: value})}>
+                <Select value={formData.agroZone} onValueChange={(value) => setFormData({ ...formData, agroZone: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder={language === 'sw' ? 'Chagua eneo la kilimo-ekolojia' : 'Select agro-ecological zone'} />
                   </SelectTrigger>
@@ -433,7 +437,7 @@ export default function KenyaOnboarding() {
                   step="0.1"
                   placeholder="e.g., 2.5"
                   value={formData.landSize}
-                  onChange={(e) => setFormData({...formData, landSize: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, landSize: e.target.value })}
                 />
                 <p className="text-sm text-muted-foreground mt-2">
                   {language === 'sw' ? 'Ingiza hekta (1 hekta = 2.47 ekari)' : 'Enter in hectares (1 hectare = 2.47 acres)'}

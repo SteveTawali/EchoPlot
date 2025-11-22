@@ -5,12 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Camera, Upload, CheckCircle, AlertCircle, Brain, Leaf } from "lucide-react";
 import { toast } from "sonner";
-import { aiTreeRecognition } from "@/utils/aiImageRecognition";
+import { aiTreeRecognition, TreeRecognitionResult, SpeciesMatch } from "@/utils/aiImageRecognition";
 import { useLanguage } from "@/hooks/useLanguage";
 import { logger } from "@/utils/logger";
 
 interface AIVerificationUploadProps {
-  onVerificationComplete: (result: any) => void;
+  onVerificationComplete: (result: TreeRecognitionResult) => void;
   expectedTree?: {
     id: string;
     name: string;
@@ -21,14 +21,14 @@ interface AIVerificationUploadProps {
   };
 }
 
-export const AIVerificationUpload = ({ 
-  onVerificationComplete, 
+export const AIVerificationUpload = ({
+  onVerificationComplete,
   expectedTree,
-  userLocation 
+  userLocation
 }: AIVerificationUploadProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analysisResult, setAnalysisResult] = useState<TreeRecognitionResult | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { language } = useLanguage();
@@ -79,7 +79,7 @@ export const AIVerificationUpload = ({
 
       // Perform AI analysis
       const result = await aiTreeRecognition.analyzeTreePhoto(file, userLocation);
-      
+
       clearInterval(progressInterval);
       setAnalysisProgress(100);
       setAnalysisResult(result);
@@ -87,12 +87,12 @@ export const AIVerificationUpload = ({
       // Check if the identified species matches expected tree
       if (expectedTree && result.species.length > 0) {
         const topMatch = result.species[0];
-        const isCorrectSpecies = topMatch.id === expectedTree.id || 
-                                topMatch.name.toLowerCase().includes(expectedTree.name.toLowerCase());
-        
+        const isCorrectSpecies = topMatch.id === expectedTree.id ||
+          topMatch.name.toLowerCase().includes(expectedTree.name.toLowerCase());
+
         if (isCorrectSpecies) {
           toast.success(
-            language === 'en' 
+            language === 'en'
               ? `✅ AI confirmed: ${topMatch.name} (${Math.round(topMatch.confidence * 100)}% confidence)`
               : `✅ AI imethibitisha: ${topMatch.name} (imani ${Math.round(topMatch.confidence * 100)}%)`
           );
@@ -108,7 +108,7 @@ export const AIVerificationUpload = ({
       // Check tree health
       if (result.healthAssessment.isHealthy) {
         toast.success(
-          language === 'en' 
+          language === 'en'
             ? '🌿 Tree appears healthy!'
             : '🌿 Mti unaonekana mzuri!'
         );
@@ -176,7 +176,7 @@ export const AIVerificationUpload = ({
             {language === 'en' ? 'AI-Powered Tree Verification' : 'Uthibitisho wa Miti wa AI'}
           </CardTitle>
           <CardDescription>
-            {language === 'en' 
+            {language === 'en'
               ? 'Upload a photo of your planted tree for AI analysis and verification'
               : 'Pakia picha ya mti wako uliopandwa kwa ajili ya uchambuzi na uthibitisho wa AI'
             }
@@ -187,7 +187,7 @@ export const AIVerificationUpload = ({
             <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
               <Camera className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground mb-4">
-                {language === 'en' 
+                {language === 'en'
                   ? 'Take or upload a clear photo of your planted tree'
                   : 'Piga au pakia picha ya wazi ya mti wako uliopandwa'
                 }
@@ -248,7 +248,7 @@ export const AIVerificationUpload = ({
                       {language === 'en' ? 'Species Identification' : 'Utambuzi wa Aina'}
                     </h4>
                     <div className="space-y-2">
-                      {analysisResult.species.map((species: any, index: number) => (
+                      {analysisResult.species.map((species: SpeciesMatch, index: number) => (
                         <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                           <div>
                             <p className="font-medium">{species.name}</p>
@@ -257,7 +257,7 @@ export const AIVerificationUpload = ({
                             </p>
                           </div>
                           <Badge variant={index === 0 ? "default" : "secondary"}>
-                            {index === 0 
+                            {index === 0
                               ? (language === 'en' ? 'Top Match' : 'Kufanana Zaidi')
                               : `#${index + 1}`
                             }
@@ -357,7 +357,7 @@ export const AIVerificationUpload = ({
                 {language === 'en' ? 'Species Recognition' : 'Utambuzi wa Aina'}
               </p>
               <p className="text-muted-foreground">
-                {language === 'en' 
+                {language === 'en'
                   ? 'Identifies tree species with 85%+ accuracy'
                   : 'Inatambua aina za miti kwa usahihi wa 85%+'
                 }
@@ -368,7 +368,7 @@ export const AIVerificationUpload = ({
                 {language === 'en' ? 'Health Analysis' : 'Uchambuzi wa Afya'}
               </p>
               <p className="text-muted-foreground">
-                {language === 'en' 
+                {language === 'en'
                   ? 'Detects diseases and health issues'
                   : 'Inagundua magonjwa na matatizo ya afya'
                 }
@@ -379,7 +379,7 @@ export const AIVerificationUpload = ({
                 {language === 'en' ? 'Growth Stage' : 'Hatua ya Ukuaji'}
               </p>
               <p className="text-muted-foreground">
-                {language === 'en' 
+                {language === 'en'
                   ? 'Determines seedling, sapling, or mature'
                   : 'Inaamua mche, mti mdogo, au mkubwa'
                 }
@@ -390,7 +390,7 @@ export const AIVerificationUpload = ({
                 {language === 'en' ? 'Planting Validation' : 'Uthibitisho wa Kupanda'}
               </p>
               <p className="text-muted-foreground">
-                {language === 'en' 
+                {language === 'en'
                   ? 'Verifies proper planting location'
                   : 'Inathibitisha mahali pa kupanda'
                 }

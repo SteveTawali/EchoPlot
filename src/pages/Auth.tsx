@@ -26,16 +26,23 @@ const Auth = () => {
 
   // Check if user is coming from password reset email
   useEffect(() => {
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
-    const type = hashParams.get('type');
+    // Check URL hash for recovery token (Supabase uses hash for magic links)
+    const checkRecoveryMode = () => {
+      const hash = window.location.hash;
+      if (hash) {
+        const hashParams = new URLSearchParams(hash.substring(1));
+        const type = hashParams.get('type');
 
-    if (type === 'recovery' && accessToken) {
-      setIsResettingPassword(true);
-      setIsForgotPassword(false);
-      setIsLogin(false);
-    }
-  }, [searchParams]);
+        if (type === 'recovery') {
+          setIsResettingPassword(true);
+          setIsForgotPassword(false);
+          setIsLogin(false);
+        }
+      }
+    };
+
+    checkRecoveryMode();
+  }, []);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();

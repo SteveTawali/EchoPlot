@@ -26,7 +26,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Leaf className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            <span className="font-bold text-base sm:text-lg">Plantara</span>
+            <span className="font-bold text-base sm:text-lg">LeafSwipe</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
             <LanguageSwitcher />
@@ -76,11 +76,11 @@ const Index = () => {
           </div>
 
           <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white mb-4 sm:mb-6">
-            Welcome to Plantara! 🌳
+            Welcome to LeafSwipe! 🌳
           </h1>
 
           <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto">
-            Plantara transforms tree planting from a simple agricultural activity into a profound act of intergenerational stewardship.
+            LeafSwipe transforms tree planting from a simple agricultural activity into a profound act of intergenerational stewardship.
             Every tree you plant creates ripples that echo through generations.
           </p>
 

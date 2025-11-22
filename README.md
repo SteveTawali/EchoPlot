@@ -1,12 +1,12 @@
-# Plantara 🌳
+# LeafSwipe 🌳
 
 **Creating Ripples of Impact Through Time**
 
-Plantara transforms tree planting from a simple agricultural activity into a profound act of intergenerational stewardship. Every tree you plant creates ripples that echo through generations.
+LeafSwipe transforms tree planting from a simple agricultural activity into a profound act of intergenerational stewardship. Every tree you plant creates ripples that echo through generations.
 
 ## Project Overview
 
-Plantara is an AI-powered tree matching platform specifically designed for Kenya, helping farmers and landowners discover the perfect tree species for their land through an intuitive swipe-based interface. The platform combines machine learning algorithms, scientific tree compatibility data, and real-time weather information to provide personalized recommendations that improve over time.
+LeafSwipe is an AI-powered tree matching platform specifically designed for Kenya, helping farmers and landowners discover the perfect tree species for their land through an intuitive swipe-based interface. The platform combines machine learning algorithms, scientific tree compatibility data, and real-time weather information to provide personalized recommendations that improve over time.
 
 ## Key Features
 
@@ -77,8 +77,8 @@ Plantara is an AI-powered tree matching platform specifically designed for Kenya
 
 ```bash
 # Clone the repository
-git clone https://github.com/SteveTawali/Plantara.git 
-cd Plantara
+git clone https://github.com/SteveTawali/LeafSwipe.git 
+cd LeafSwipe
 
 # Install dependencies
 npm install
@@ -188,7 +188,7 @@ npm run preview
 
 ## Contributing
 
-We welcome contributions to Plantara! Here's how you can help:
+We welcome contributions to LeafSwipe! Here's how you can help:
 
 1. **Fork the repository** and create a feature branch
 2. **Make your changes** following the existing code style
@@ -224,4 +224,4 @@ This project is part of a hackathon submission focused on environmental impact a
 
 ---
 
-**Plantara** - Making the world greener, one swipe at a time 🌱
+**LeafSwipe** - Making the world greener, one swipe at a time 🌱

@@ -1,5 +1,5 @@
 -- ============================================
--- Plantara Complete Database Setup
+-- LeafSwipe Complete Database Setup
 -- Run this file in Supabase SQL Editor
 -- ============================================
 -- Note: SonarLint warnings about duplicated literals are expected

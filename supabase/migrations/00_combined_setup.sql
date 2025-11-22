@@ -1,5 +1,5 @@
 -- ============================================
--- EchoPlot Complete Database Setup
+-- Plantara Complete Database Setup
 -- Run this file in Supabase SQL Editor
 -- ============================================
 -- Note: SonarLint warnings about duplicated literals are expected

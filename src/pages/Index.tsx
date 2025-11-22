@@ -26,7 +26,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Leaf className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            <span className="font-bold text-base sm:text-lg">EchoPlot</span>
+            <span className="font-bold text-base sm:text-lg">Plantara</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
             <LanguageSwitcher />
@@ -66,7 +66,7 @@ const Index = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-background" />
         </div>
-        
+
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-in py-12">
           <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6 border border-primary/30">
             <Leaf className="w-3 h-3 sm:w-4 sm:h-4 text-primary-foreground" />
@@ -74,16 +74,16 @@ const Index = () => {
               Creating Ripples of Impact Through Time
             </span>
           </div>
-          
+
           <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white mb-4 sm:mb-6">
-            Welcome to EchoPlot! 🌳
+            Welcome to Plantara! 🌳
           </h1>
-          
+
           <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto">
-            EchoPlot transforms tree planting from a simple agricultural activity into a profound act of intergenerational stewardship.
+            Plantara transforms tree planting from a simple agricultural activity into a profound act of intergenerational stewardship.
             Every tree you plant creates ripples that echo through generations.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
               variant="hero"
@@ -122,7 +122,7 @@ const Index = () => {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12">
             How It Works
           </h2>
-          
+
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             <div className="text-center space-y-4 animate-fade-in">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
@@ -133,7 +133,7 @@ const Index = () => {
                 Discover diverse tree species perfectly matched to your climate and soil conditions
               </p>
             </div>
-            
+
             <div className="text-center space-y-4 animate-fade-in" style={{ animationDelay: '100ms' }}>
               <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto">
                 <Heart className="w-8 h-8 text-secondary" />
@@ -143,7 +143,7 @@ const Index = () => {
                 Match with trees that fit your land. Each right swipe brings you closer to a greener future
               </p>
             </div>
-            
+
             <div className="text-center space-y-4 animate-fade-in" style={{ animationDelay: '200ms' }}>
               <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto">
                 <Globe className="w-8 h-8 text-accent" />
@@ -165,11 +165,11 @@ const Index = () => {
               Find Your Perfect Match
             </h2>
             <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-              Each tree has unique benefits and requirements. Swipe through our curated selection 
+              Each tree has unique benefits and requirements. Swipe through our curated selection
               and discover the perfect species for your land.
             </p>
           </div>
-          
+
           <SwipeInterface trees={KENYAN_TREES} />
         </div>
       </section>

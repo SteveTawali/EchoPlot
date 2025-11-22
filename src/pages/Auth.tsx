@@ -149,7 +149,7 @@ const Auth = () => {
             toast.error(error.message || "Failed to sign up");
           }
         } else {
-          toast.success("Account created! Welcome to EchoPlot.");
+          toast.success("Account created! Welcome to Plantara.");
           navigate("/onboarding");
         }
       }
@@ -167,7 +167,7 @@ const Auth = () => {
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
             <Leaf className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-center">EchoPlot</h1>
+          <h1 className="text-3xl font-bold text-center">Plantara</h1>
           <p className="text-muted-foreground text-center mt-2">
             {isResettingPassword
               ? "Set your new password"

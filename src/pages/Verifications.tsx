@@ -91,7 +91,7 @@ const Verifications = () => {
     );
   }
 
-  if (showUpload && treeName) {
+  if (showUpload) {
     return (
       <div className="min-h-screen bg-background">
         <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
@@ -111,7 +111,7 @@ const Verifications = () => {
           <div className="max-w-2xl mx-auto">
             <VerificationUpload
               matchId={matchId || undefined}
-              treeName={treeName}
+              treeName={treeName || ""}
               onSuccess={() => {
                 fetchVerifications();
                 setShowUpload(false);

@@ -48,6 +48,7 @@ export const VerificationUpload = ({
   const [notes, setNotes] = useState("");
   const [plantingDate, setPlantingDate] = useState(new Date().toISOString().split('T')[0]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [treeNameInput, setTreeNameInput] = useState(treeName || "");
 
   // Load user profile on mount
   useEffect(() => {
@@ -183,9 +184,14 @@ export const VerificationUpload = ({
       return;
     }
 
+    if (!treeNameInput || treeNameInput.trim() === "") {
+      toast.error("Please enter the tree species name.");
+      return;
+    }
+
     // Validate verification data
     const validation = validateInput(verificationSchema, {
-      tree_name: treeName,
+      tree_name: treeNameInput.trim(),
       latitude: finalLat,
       longitude: finalLng,
       planting_date: plantingDate || new Date().toISOString().split('T')[0],
@@ -235,7 +241,7 @@ export const VerificationUpload = ({
         .insert({
           user_id: user.id,
           tree_match_id: matchId || null,
-          tree_name: sanitizeString(treeName),
+          tree_name: sanitizeString(treeNameInput.trim()),
           image_url: urlData.publicUrl,
           latitude: finalLat,
           longitude: finalLng,
@@ -278,7 +284,9 @@ export const VerificationUpload = ({
       <div>
         <h3 className="text-2xl font-bold mb-2">Verify Your Planting</h3>
         <p className="text-muted-foreground">
-          Upload a photo of your planted {treeName} to track your impact
+          {treeName
+            ? `Upload a photo of your planted ${treeName} to track your impact`
+            : "Upload a photo of your tree planting to track your impact"}
         </p>
       </div>
 
@@ -322,6 +330,25 @@ export const VerificationUpload = ({
             >
               <X className="w-4 h-4" />
             </Button>
+          </div>
+
+          {/* Tree Name Input */}
+          <div className="space-y-2">
+            <Label htmlFor="tree-name">Tree Species Name *</Label>
+            <Input
+              id="tree-name"
+              type="text"
+              placeholder="e.g., Mango, Acacia, Grevillea"
+              value={treeNameInput}
+              onChange={(e) => setTreeNameInput(e.target.value)}
+              disabled={uploading || !!treeName}
+              required
+            />
+            {treeName && (
+              <p className="text-xs text-muted-foreground">
+                Pre-filled from your tree match
+              </p>
+            )}
           </div>
 
           {/* Location Section */}

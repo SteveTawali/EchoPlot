@@ -8,11 +8,24 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useNavigate } from "react-router-dom";
 import heroForest from "@/assets/hero-forest.jpg";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 const Index = () => {
   const { signOut, user } = useAuth();
   const { canModerate } = useAdminAuth();
   const navigate = useNavigate();
+
+  // Redirect to /auth if user has recovery token (mobile password reset fix)
+  useEffect(() => {
+    const hash = window.location.hash;
+    const searchParams = new URLSearchParams(window.location.search);
+
+    // Check if this is a password reset link
+    if (hash.includes('type=recovery') || searchParams.get('type') === 'recovery') {
+      // Preserve the full URL and redirect to /auth
+      navigate('/auth' + window.location.search + window.location.hash);
+    }
+  }, [navigate]);
 
   const handleSignOut = async () => {
     await signOut();

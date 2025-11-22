@@ -28,6 +28,7 @@ const Auth = () => {
   useEffect(() => {
     // Check URL hash for recovery token (Supabase uses hash for magic links)
     const checkRecoveryMode = () => {
+      // Check URL hash first (desktop browsers)
       const hash = window.location.hash;
       if (hash) {
         const hashParams = new URLSearchParams(hash.substring(1));
@@ -37,12 +38,21 @@ const Auth = () => {
           setIsResettingPassword(true);
           setIsForgotPassword(false);
           setIsLogin(false);
+          return;
         }
+      }
+
+      // Also check query parameters (mobile browsers sometimes use this)
+      const type = searchParams.get('type');
+      if (type === 'recovery') {
+        setIsResettingPassword(true);
+        setIsForgotPassword(false);
+        setIsLogin(false);
       }
     };
 
     checkRecoveryMode();
-  }, []);
+  }, [searchParams]);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();

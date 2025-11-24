@@ -4,10 +4,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Heart, Star, Trash2, Leaf, Home } from "lucide-react";
 import { toast } from "sonner";
 import { logger } from "@/utils/logger";
 import { KENYAN_TREES } from "@/data/kenya";
+import { useTreeImage } from "@/hooks/useTreeImages";
+import { MatchCard } from "@/components/MatchCard";
 
 interface Match {
   id: string;
@@ -142,57 +145,18 @@ const Matches = () => {
           ) : (
             <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
               {matches.map((match) => (
-                <Card key={match.id} className="overflow-hidden">
-                  <div className="relative h-48">
-                    <img
-                      src={getTreeImage(match.tree_id)}
-                      alt={match.tree_name}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute top-4 right-4">
-                      <div className={`${getCompatibilityColor(match.compatibility_score)} px-3 py-1 rounded-full`}>
-                        <span className="text-white font-bold">{match.compatibility_score}%</span>
-                      </div>
-                    </div>
-                    <div className="absolute bottom-4 left-4 text-white">
-                      <h3 className="text-2xl font-bold">{match.tree_name}</h3>
-                    </div>
-                  </div>
-
-                  <div className="p-4 space-y-3">
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>Matched {new Date(match.matched_at).toLocaleDateString()}</span>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Button
-                        variant={match.favorited ? "default" : "outline"}
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => toggleFavorite(match.id, match.favorited)}
-                      >
-                        <Star className={`w-4 h-4 mr-2 ${match.favorited ? "fill-current" : ""}`} />
-                        {match.favorited ? "Favorited" : "Favorite"}
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => navigate(`/verifications?matchId=${match.id}&treeName=${encodeURIComponent(match.tree_name)}`)}
-                      >
-                        Verify Planting
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteMatch(match.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  onToggleFavorite={toggleFavorite}
+                  onDelete={deleteMatch}
+                  onViewDetails={(matchId) => {
+                    const match = matches.find(m => m.id === matchId);
+                    if (match) {
+                      navigate(`/verifications?matchId=${match.id}&treeName=${encodeURIComponent(match.tree_name)}`);
+                    }
+                  }}
+                />
               ))}
             </div>
           )}

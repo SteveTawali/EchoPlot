@@ -56,6 +56,7 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   const [aiRecommendations, setAiRecommendations] = useState<Record<string, unknown>[]>([]);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const hasShownToast = useRef(false);
+  const hasShownAIToast = useRef(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -116,7 +117,10 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
 
         setFilteredTrees(sortedTrees);
 
-        toast.success("🤖 AI recommendations generated! Trees are now sorted by compatibility.");
+        if (!hasShownAIToast.current) {
+          toast.success("🤖 AI recommendations generated! Trees are now sorted by compatibility.");
+          hasShownAIToast.current = true;
+        }
       } catch (error) {
         logger.error('Error generating AI recommendations:', error);
       }
@@ -148,12 +152,12 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
       // Sort by compatibility score (highest first)
       treesWithScores.sort((a, b) => b.score - a.score);
 
-      // Filter to only show trees with at least 45% compatibility (lowered threshold)
+      // Filter to only show trees with at least 60% compatibility (stricter threshold)
       const suitable = treesWithScores
-        .filter(({ score }) => score >= 45)
+        .filter(({ score }) => score >= 60)
         .map(({ tree }) => tree);
 
-      logger.log(`📊 Total trees: ${trees.length}, Suitable: ${suitable.length}, Threshold: 45%`);
+      logger.log(`📊 Total trees: ${trees.length}, Suitable: ${suitable.length}, Threshold: 60%`);
 
       if (suitable.length > 0) {
         setFilteredTrees(suitable);
@@ -164,10 +168,12 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           hasShownToast.current = true;
         }
       } else {
-        // If no highly compatible trees, show all but notify user
-        setFilteredTrees(trees);
+        // No compatible trees - show message and empty list
+        setFilteredTrees([]);
         if (!hasShownToast.current) {
-          toast.info('Showing all trees - update your profile for better matches');
+          toast.warning('No trees found for your location', {
+            description: 'Please update your profile or contact support for assistance'
+          });
           hasShownToast.current = true;
         }
       }

@@ -9,11 +9,13 @@ import { useNavigate } from "react-router-dom";
 import heroForest from "@/assets/hero-forest.jpg";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const Index = () => {
   const { signOut, user } = useAuth();
   const { canModerate } = useAdminAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   // Redirect to /auth if user has recovery token (mobile password reset fix)
   useEffect(() => {
@@ -35,37 +37,48 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-3 flex justify-between items-center">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 border-b border-border">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-3 flex justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <img src="/Logo.png" alt="LeafSwipe" className="w-8 h-8 sm:w-10 sm:h-10" />
-            <span className="font-bold text-base sm:text-lg">LeafSwipe</span>
+            <img
+              src="/navbar-logo.webp"
+              alt="LeafSwipe"
+              className="h-14 sm:h-16 w-auto"
+              style={{ imageRendering: 'crisp-edges' }}
+            />
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
             <LanguageSwitcher />
             <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")} className="hidden sm:flex">
-              Dashboard
+              {t('nav.dashboard')}
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/nursery")} className="px-2 sm:px-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="px-2 sm:px-4 opacity-70"
+              onClick={() => toast.info("Nursery Marketplace", {
+                description: "Connect with verified nurseries to purchase your matched trees. Coming soon"
+              })}
+            >
               <ShoppingCart className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Nursery</span>
+              <span className="hidden sm:inline">{t('nav.nursery')} 🔜</span>
             </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate("/verifications")} className="hidden md:flex">
-              Verifications
+              {t('nav.verifications')}
             </Button>
             {canModerate && (
               <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="hidden lg:flex">
                 <Shield className="w-4 h-4 mr-2" />
-                Admin
+                {t('nav.admin')}
               </Button>
             )}
             <Button variant="ghost" size="sm" onClick={() => navigate("/profile")} className="px-2 sm:px-4">
               <User className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Profile</span>
+              <span className="hidden sm:inline">{t('nav.profile')}</span>
             </Button>
             <Button variant="ghost" size="sm" onClick={handleSignOut} className="px-2 sm:px-4">
               <LogOut className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Sign Out</span>
+              <span className="hidden sm:inline">{t('nav.signOut')}</span>
             </Button>
           </div>
         </div>
@@ -84,17 +97,16 @@ const Index = () => {
           <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6 border border-primary/30">
             <Leaf className="w-3 h-3 sm:w-4 sm:h-4 text-primary-foreground" />
             <span className="text-xs sm:text-sm text-primary-foreground font-medium">
-              Creating Ripples of Impact Through Time
+              {t('home.tagline')}
             </span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white mb-4 sm:mb-6">
-            Welcome to LeafSwipe! 🌳
+            {t('home.welcome')} 🌳
           </h1>
 
           <p className="text-base sm:text-xl md:text-2xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto">
-            LeafSwipe transforms tree planting from a simple agricultural activity into a profound act of intergenerational stewardship.
-            Every tree you plant creates ripples that echo through generations.
+            {t('home.description')}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -106,16 +118,16 @@ const Index = () => {
               }}
               className="w-full sm:w-auto"
             >
-              Start Swiping
+              {t('home.startSwiping')}
             </Button>
             <div className="flex items-center gap-4 sm:gap-6 text-white/80">
               <div className="flex items-center gap-2">
                 <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
-                <span className="text-xs sm:text-sm">10K+ Matches</span>
+                <span className="text-xs sm:text-sm">10K+ {t('home.matches')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
-                <span className="text-xs sm:text-sm">50+ Countries</span>
+                <span className="text-xs sm:text-sm">50+ {t('home.countries')}</span>
               </div>
             </div>
           </div>
@@ -133,7 +145,7 @@ const Index = () => {
       <section className="py-12 sm:py-16 md:py-20 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12">
-            How It Works
+            {t('home.howItWorks')}
           </h2>
 
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
@@ -141,9 +153,9 @@ const Index = () => {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
                 <Leaf className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold">Browse Trees</h3>
+              <h3 className="text-xl font-semibold">{t('home.browseTrees')}</h3>
               <p className="text-muted-foreground">
-                Discover diverse tree species perfectly matched to your climate and soil conditions
+                {t('home.browseDesc')}
               </p>
             </div>
 
@@ -151,9 +163,9 @@ const Index = () => {
               <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto">
                 <Heart className="w-8 h-8 text-secondary" />
               </div>
-              <h3 className="text-xl font-semibold">Swipe Right</h3>
+              <h3 className="text-xl font-semibold">{t('home.swipeRight')}</h3>
               <p className="text-muted-foreground">
-                Match with trees that fit your land. Each right swipe brings you closer to a greener future
+                {t('home.swipeDesc')}
               </p>
             </div>
 
@@ -161,9 +173,9 @@ const Index = () => {
               <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto">
                 <Globe className="w-8 h-8 text-accent" />
               </div>
-              <h3 className="text-xl font-semibold">Make Impact</h3>
+              <h3 className="text-xl font-semibold">{t('home.makeImpact')}</h3>
               <p className="text-muted-foreground">
-                Your matches contribute to reforestation projects worldwide. Track your environmental impact
+                {t('home.impactDesc')}
               </p>
             </div>
           </div>
@@ -175,11 +187,10 @@ const Index = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
-              Find Your Perfect Match
+              {t('home.findMatch')}
             </h2>
             <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-              Each tree has unique benefits and requirements. Swipe through our curated selection
-              and discover the perfect species for your land.
+              {t('home.findMatchDesc')}
             </p>
           </div>
 
@@ -191,7 +202,7 @@ const Index = () => {
       <footer className="py-12 px-4 border-t border-border">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-muted-foreground">
-            Together, we're making the world greener, one swipe at a time 🌱
+            {t('home.footer')} 🌱
           </p>
         </div>
       </footer>

@@ -67,7 +67,6 @@ export default function AdminUsers() {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('onboarding_completed', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

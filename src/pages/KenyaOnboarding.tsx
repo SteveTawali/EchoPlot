@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +41,7 @@ export default function KenyaOnboarding() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [detectingLocation, setDetectingLocation] = useState(false);
+  const [locationDetected, setLocationDetected] = useState(false);
   const { user } = useAuth();
   const { language } = useLanguage();
 
@@ -56,6 +57,11 @@ export default function KenyaOnboarding() {
     phone: "",
     goals: [] as string[],
   });
+
+  // Auto-detect location on component mount
+  useEffect(() => {
+    handleDetectLocation();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDetectLocation = async () => {
     setDetectingLocation(true);
@@ -132,6 +138,11 @@ export default function KenyaOnboarding() {
         soilType: detectedSoil || prev.soilType,
       }));
 
+      // Mark that location was detected
+      if (detectedCounty) {
+        setLocationDetected(true);
+      }
+
       // Step 6: Show success message
       const successParts: string[] = [];
       if (detectedCounty) successParts.push(detectedCounty);
@@ -182,15 +193,50 @@ export default function KenyaOnboarding() {
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step === 1 && !formData.soilType) {
       toast.error(language === 'sw' ? "Tafadhali chagua aina ya udongo" : "Please select a soil type");
       return;
     }
-    if (step === 2 && (!formData.county || !formData.phone || !formData.agroZone)) {
-      toast.error(language === 'sw' ? "Tafadhali jaza kaunti, nambari ya simu, na eneo la kilimo-ekolojia" : "Please fill county, phone number, and agro-ecological zone");
-      return;
+
+    if (step === 2) {
+      if (!formData.county || !formData.phone || !formData.agroZone) {
+        toast.error(language === 'sw' ? "Tafadhali jaza kaunti, nambari ya simu, na eneo la kilimo-ekolojia" : "Please fill county, phone number, and agro-ecological zone");
+        return;
+      }
+
+      // Check phone number uniqueness by attempting to update it
+      setLoading(true);
+      try {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ phone: formData.phone })
+          .eq("user_id", user?.id);
+
+        if (error) {
+          // Check if error is due to unique constraint violation
+          if (error.message?.includes('profiles_phone_unique') || error.code === '23505') {
+            toast.error(
+              language === 'sw'
+                ? "Nambari hii ya simu tayari inatumika na mtumiaji mwingine"
+                : "This phone number is already in use by another user",
+              {
+                description: language === 'sw'
+                  ? "Tafadhali tumia nambari tofauti ya simu"
+                  : "Please use a different phone number"
+              }
+            );
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (error) {
+        logger.error('Error checking phone:', error);
+      } finally {
+        setLoading(false);
+      }
     }
+
     if (step === 3 && !formData.landSize) {
       toast.error(language === 'sw' ? "Tafadhali ingiza ukubwa wa ardhi" : "Please enter your land size");
       return;
@@ -263,7 +309,24 @@ export default function KenyaOnboarding() {
         })
         .eq("user_id", user?.id);
 
-      if (error) throw error;
+      if (error) {
+        // Check if error is due to unique constraint violation on phone number
+        if (error.message?.includes('profiles_phone_unique') || error.code === '23505') {
+          toast.error(
+            language === 'sw'
+              ? "Nambari hii ya simu tayari inatumika na mtumiaji mwingine"
+              : "This phone number is already in use by another user",
+            {
+              description: language === 'sw'
+                ? "Tafadhali tumia nambari tofauti ya simu"
+                : "Please use a different phone number"
+            }
+          );
+          setLoading(false);
+          return;
+        }
+        throw error;
+      }
 
       toast.success(language === 'sw' ? "Umekamilisha! Hebu tuone miti inayofaa" : "Profile completed! Let's find your perfect trees.");
 
@@ -273,6 +336,7 @@ export default function KenyaOnboarding() {
       // Force page reload to ensure ProtectedRoute sees updated data
       globalThis.location.href = "/";
     } catch (error) {
+      logger.error('Error saving profile:', error);
       toast.error(error.message || "Failed to save profile");
     } finally {
       setLoading(false);
@@ -343,8 +407,15 @@ export default function KenyaOnboarding() {
               </Label>
 
               <div>
-                <Label>{language === 'sw' ? 'Kaunti' : 'County'}</Label>
-                <Select value={formData.county} onValueChange={(value) => setFormData({ ...formData, county: value })}>
+                <Label>
+                  {language === 'sw' ? 'Kaunti' : 'County'}
+                  {locationDetected && <span className="text-xs text-muted-foreground ml-2">(Auto-detected)</span>}
+                </Label>
+                <Select
+                  value={formData.county}
+                  onValueChange={(value) => setFormData({ ...formData, county: value })}
+                  disabled={locationDetected}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder={language === 'sw' ? 'Chagua kaunti' : 'Select county'} />
                   </SelectTrigger>
@@ -356,6 +427,11 @@ export default function KenyaOnboarding() {
                     ))}
                   </SelectContent>
                 </Select>
+                {locationDetected && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {language === 'sw' ? 'Kaunti imegunduliwa kutoka GPS yako' : 'County detected from your GPS location'}
+                  </p>
+                )}
               </div>
 
               <div>

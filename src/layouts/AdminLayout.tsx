@@ -74,7 +74,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <>
       <div className="p-4 md:p-6">
         <div className="flex items-center gap-2 mb-2">
-          <Shield className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+          <img src="/square-logo.webp" alt="LeafSwipe" className="h-6 w-6 md:h-8 md:w-8" />
           <div>
             <h1 className="text-lg md:text-xl font-bold">Admin Panel</h1>
             <p className="text-xs text-muted-foreground capitalize">{role}</p>
@@ -142,7 +142,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </SheetContent>
         </Sheet>
         <div className="flex items-center gap-2 ml-3">
-          <Shield className="h-5 w-5 text-primary" />
+          <img src="/square-logo.webp" alt="LeafSwipe" className="h-5 w-5" />
           <h1 className="text-base font-bold">Admin Panel</h1>
         </div>
       </div>

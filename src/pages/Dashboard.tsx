@@ -109,7 +109,7 @@ const Dashboard = () => {
             Back to Home
           </Button>
           <div className="flex items-center gap-2">
-            <Leaf className="w-6 h-6 text-primary" />
+            <img src="/square-logo.webp" alt="LeafSwipe" className="w-6 h-6" />
             <span className="font-bold text-lg">Impact Dashboard</span>
           </div>
         </div>
@@ -218,7 +218,7 @@ const Dashboard = () => {
                   .map((location) => (
                     <div key={location.id} className="flex items-center gap-4 p-4 bg-muted rounded-lg">
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Leaf className="w-6 h-6 text-primary" />
+                        <img src="/square-logo.webp" alt="Tree" className="w-6 h-6" />
                       </div>
                       <div className="flex-1">
                         <p className="font-semibold">{location.tree_name}</p>

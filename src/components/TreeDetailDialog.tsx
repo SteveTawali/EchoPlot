@@ -58,8 +58,8 @@ export const TreeDetailDialog = ({
     toast.info(
       language === 'en' ? 'Processing Payment...' : 'Inashughulikia Malipo...',
       {
-        description: language === 'en' 
-          ? 'Check your phone for M-Pesa prompt' 
+        description: language === 'en'
+          ? 'Check your phone for M-Pesa prompt'
           : 'Angalia simu yako kwa ujumbe wa M-Pesa',
       }
     );
@@ -71,8 +71,8 @@ export const TreeDetailDialog = ({
     toast.success(
       language === 'en' ? 'Payment Successful!' : 'Malipo Yamefaulu!',
       {
-        description: language === 'en' 
-          ? `KSh ${totalAmount.toLocaleString()} paid. You'll receive collection details via SMS.` 
+        description: language === 'en'
+          ? `KSh ${totalAmount.toLocaleString()} paid. You'll receive collection details via SMS.`
           : `KSh ${totalAmount.toLocaleString()} imelipwa. Utapokea maelezo ya ukusanyaji kupitia SMS.`,
       }
     );
@@ -155,7 +155,7 @@ export const TreeDetailDialog = ({
                   <Leaf className="w-5 h-5 text-primary" />
                   {language === 'sw' ? 'Mwongozo wa Kupanda' : 'Planting Guide'}
                 </h3>
-                
+
                 {/* Suitable Counties */}
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -223,7 +223,7 @@ export const TreeDetailDialog = ({
                 )}
               </div>
 
-              {/* Purchase Section */}
+              {/* Purchase Section - Coming Soon with Nursery Marketplace
               <div className="border-t pt-4 space-y-4">
                 <h3 className="font-semibold text-lg">
                   {language === 'sw' ? 'Nunua Miche' : 'Get Seedlings'}
@@ -270,6 +270,7 @@ export const TreeDetailDialog = ({
                   </Button>
                 </div>
               </div>
+              */}
             </div>
           </>
         ) : (
@@ -284,12 +285,12 @@ export const TreeDetailDialog = ({
                 {language === 'en' ? 'Payment Successful!' : 'Malipo Yamefaulu!'}
               </DialogTitle>
               <DialogDescription className="text-center">
-                {language === 'en' 
-                  ? 'Your order has been confirmed' 
+                {language === 'en'
+                  ? 'Your order has been confirmed'
                   : 'Agizo lako limethibitishwa'}
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4 py-4">
               <div className="bg-muted p-4 rounded-lg space-y-2">
                 <div className="flex justify-between">
@@ -311,13 +312,13 @@ export const TreeDetailDialog = ({
                   <span className="font-medium">KSh {(tree.price * quantity).toLocaleString()}</span>
                 </div>
               </div>
-              
+
               <p className="text-sm text-muted-foreground text-center">
-                {language === 'en' 
-                  ? 'You will receive SMS with nursery location and collection details within 24 hours.' 
+                {language === 'en'
+                  ? 'You will receive SMS with nursery location and collection details within 24 hours.'
                   : 'Utapokea SMS yenye maelezo ya pembejeo na jinsi ya kukusanya ndani ya masaa 24.'}
               </p>
-              
+
               <Button onClick={handleClose} className="w-full">
                 {language === 'en' ? 'Done' : 'Maliza'}
               </Button>

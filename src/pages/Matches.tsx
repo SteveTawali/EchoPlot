@@ -113,7 +113,7 @@ const Matches = () => {
             <span className="hidden sm:inline">Home</span>
           </Button>
           <div className="flex items-center gap-2">
-            <Leaf className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            <img src="/square-logo.webp" alt="LeafSwipe" className="w-5 h-5 sm:w-6 sm:h-6" />
             <span className="font-bold text-base sm:text-lg">Your Matches</span>
           </div>
         </div>

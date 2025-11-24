@@ -133,7 +133,7 @@ const Verifications = () => {
             Home
           </Button>
           <div className="flex items-center gap-2">
-            <img src="/square-logo.webp" alt="LeafSwipe" className="w-6 h-6" />
+            <Leaf className="w-6 h-6 text-primary" />
             <span className="font-bold text-lg">Your Verifications</span>
           </div>
         </div>

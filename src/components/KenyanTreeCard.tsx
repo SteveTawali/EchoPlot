@@ -1,9 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, Leaf, TrendingUp, Calendar, DollarSign } from "lucide-react";
 import type { KenyanTreeSpecies } from "@/data/kenya";
 import type { SeasonalRecommendation, SuccessProbability } from "@/utils/kenyaCompatibility";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useTreeImage } from "@/hooks/useTreeImages";
 
 interface KenyanTreeCardProps extends KenyanTreeSpecies {
   compatibilityScore?: number;
@@ -25,6 +27,7 @@ export const KenyanTreeCard = ({
   successData,
 }: KenyanTreeCardProps) => {
   const { language } = useLanguage();
+  const { imageUrl, loading: imageLoading } = useTreeImage(englishName);
   const displayName = language === 'sw' ? swahiliName : englishName;
   const displayDescription = description[language as 'en' | 'sw'];
 
@@ -53,6 +56,26 @@ export const KenyanTreeCard = ({
 
   return (
     <Card className="h-full flex flex-col overflow-hidden shadow-card hover:shadow-lg transition-shadow">
+      {/* Tree Image */}
+      <div className="relative w-full h-48 bg-muted overflow-hidden">
+        {imageLoading ? (
+          <Skeleton className="w-full h-full" />
+        ) : (
+          <img
+            src={imageUrl || undefined}
+            alt={displayName}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        )}
+        {/* Compatibility badge overlay */}
+        {compatibilityScore !== undefined && (
+          <div className={`absolute top-3 right-3 ${getScoreColor(compatibilityScore)} text-white px-3 py-1 rounded-full font-bold shadow-lg`}>
+            {compatibilityScore}%
+          </div>
+        )}
+      </div>
+
       {/* Header with compatibility score */}
       {compatibilityScore !== undefined && (
         <div className={`${getScoreColor(compatibilityScore)} text-white p-4`}>

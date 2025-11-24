@@ -55,10 +55,15 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
   const [filteredTrees, setFilteredTrees] = useState<KenyanTreeSpecies[]>(trees);
   const [aiRecommendations, setAiRecommendations] = useState<Record<string, unknown>[]>([]);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const hasShownToast = useRef(false);
   const hasShownAIToast = useRef(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Minimum swipe distance (in px) to trigger swipe action
+  const minSwipeDistance = 50;
 
   const currentTree = filteredTrees[currentIndex];
 
@@ -231,6 +236,30 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
     }
   }, [currentTree, userProfile, weatherData]);
 
+  // Touch event handlers for mobile swipe
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null); // Reset touch end
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      handleSwipe('left');
+    } else if (isRightSwipe) {
+      handleSwipe('right');
+    }
+  };
+
   const handleSwipe = async (direction: 'left' | 'right') => {
     if (isAnimating || !user) return;
 
@@ -398,6 +427,9 @@ export const SwipeInterface = ({ trees }: SwipeInterfaceProps) => {
           role="group"
           aria-label="Current tree card"
           onClick={() => setShowDetailDialog(true)}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
           <KenyanTreeCard
             {...currentTree}
